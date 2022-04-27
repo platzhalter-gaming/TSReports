@@ -1,0 +1,127 @@
+#
+# |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----|
+#    |    |       |     | |       |     | |     | |     |    |    |
+#    |    |-----| |-----| |---|   |-----| |     | |-----|    |    |-----|
+#    |          | |   \   |       |       |     | |   \      |          |
+#    |    |-----| |    \  |-----| |       |-----| |    \     |    |-----|
+#                                                      made by Todesstoss
+#
+
+#⮟ IMPORTANTE ⮟
+
+#
+# Si quieres añadir tu propio idioma al plugin, ten en cuenta lo siguiente:
+#
+# 1. asegúrese de que el archivo tiene la extensión '.yml'. 2. asegúrese de que no tiene derecho de escritura.
+# 2. Asegúrese de que no ha habido ningún error ortográfico durante la transferencia.
+#
+# Si ahora te sientes lo suficientemente seguro como para añadir tu propio idioma,
+# Entonces te recomiendo que copies uno de los archivos por defecto y luego lo cambies
+#
+
+#⮟ MENSAJES ⮟
+
+#⮟ El marcador de posición del prefijo puede utilizarse en cualquier mensaje (%prefix%).
+prefix: '&cReports &8»&r'
+
+error: '%prefix% &cSe ha producido un error.'
+noPermission: '%prefix% &cPermisos insuficientes.'
+playerNotFound: '%prefix% &cEste jugador no fue encontrado.'
+reportNotFound: '%prefix% &cEste informe no fue encontrado.'
+onlyPlayer: '%prefix% &cEste comando sólo puede ser ejecutado por jugadores.'
+alreadyRegistered: '%prefix% &cEste mensaje/jugador ya existe.'
+#⮟ Marcadores de posición: %player%: Jugador que se reporta; %target%: Jugador que es reportado; %razón%: Motivo del informe
+staffNotify: '%prefix% &6%player% &7has &6%target% &7reported for &6%reason% &7.'
+numberTooHigh: '%prefix% &c¡El número dado es demasiado alto!'
+blacklisted: '%prefix% &cHas sido incluido en la lista negra para reportar a otros jugadores.'
+cannotBlacklisted: '%prefix% &cEste jugador no puede ser excluido.'
+#⮟ Marcadores de posición: %time%: Tiempo que falta para que el jugador pueda volver a presentarse
+reportCooldown: '%prefix% &7Por favor, espere &e%time% segundo(s) &7antes de informar.'
+reportYourself: '%prefix% &c¡No puedes reportarte a ti mismo!'
+
+commands:
+  #⮟ Marcadores de posición: %target%: Jugador que fue reportado; %reason%: Motivo del informe
+  report: '%prefix% &7Ha &asucedido&7 &6%target% &7informado por &6%reason%&7.'
+  listAbove: '&7====== &6list &7======'
+  #⮟ Marcadores de posición: %executor%: Jugador que informó; %target%: Jugador denunciado;
+  #⮟ Marcadores de posición: %reason%: Motivo del informe; %id%: ID del informe; %flag%: Bandera del informe
+  listBase: '&6%executor% &7-> &6%target% &7[&e%id%&7, &e%flag%&7]'
+  #⮟ Marcadores de posición: %page%: Página en la que se encuentra el reproductor
+  listBelow: '&7==== &6page&8: &e%page% &7===='
+  listEmpty: '%prefix% &cNo hay mensajes en este momento.'
+  #⮟ Marcadores de posición: %target%: Jugador que ha sido incluido en la lista negra; %type%: añadido/eliminado.
+  blacklist: '%prefix% &6%target% &7was blacklisted from/to %type%&7.'
+  blacklistAbove: '&7====== &8excluded &7======'
+  #⮟ Marcadores de posición: %player%: Jugador en la lista negra
+  blacklistBase: '&e%player%&7, '
+  blacklistBelow: '&7====== &8Excluido &7======'
+  blacklistEmpty: '%prefix% &cActualmente no hay jugadores en la lista negra.'
+  #⮟ Marcadores de posición: %time%: Tiempo que tardó en reiniciarse
+  resetAll: '%prefix% &7Se han restablecido las tablas de la base de datos. [&6%time%ms&7]'
+  #⮟ Marcadores de posición: %time%: Tiempo de recarga
+  reload: '%prefix% &cTSReports &7ha sido &7recargado con éxito [&6%time%ms&7]'
+  #⮟ Marcadores de posición: %target%: Jugador al que has sido teletransportader
+  teleport: '%prefijo% &7Se ha conectado al servidor de &6%target% &7.'
+  #⮟ Marcadores de posición: %target%: Nombre del objetivo; %uuid%: UUID del objetivo
+  getuuid: '%prefix% &7El uuid del jugador &6%target% &7es &6%uuid%&7.'
+  #⮟ Marcadores de posición: %mode%: activado/desactivado
+  notify: '%prefix% &7Su modo de notificación ha sido actualizado a&8: &6%mode%'
+  #⮟ Marcadores de posición: %id%: ID del informe que se ha borrado
+  delete: '%prefix% &7Ha borrado con éxito la notificación con el ID &6%id% &7.'
+  #⮟ Marcadores de posición: %id%: ID del informe; %flag%: Nueva bandera del informe
+  setflag: '%prefix% &7La bandera del mensaje con ID &6%id% &7ha sido cambiada a &6%flag% &7.'
+  #⮟ Marcadores de posición: %language%: Idioma que el jugador ha dado
+  languageNotFound: '%prefix% &cEste idioma no fue encontrado. &7[&6%language%&7]'
+  interlanguage: '%prefix% &7Su idioma ha sido cambiado a &6%language% &7.'
+  #⮟ Marcadores de posición: %executor%: Jugador que informó; %target%: Jugador denunciado
+  #⮟ Marcadores de posición: %reason%: Motivo del informe; %id%: ID del informe; %flag%: Bandera del informe
+  status: |-
+    &7====== &6Estado &7======
+    &7» Ejecutor&8: &6%executor%
+    &7» Objetivo&8: &6%suspicion%
+    &7» Razón&8: &6%reason%
+    &7» ID&8: &6%id%
+    &7» Indicador&8: &6%flag%
+    &7====== &6Estado &7======
+  #⮟ Marcadores de posición: %executor%: Jugador que informó; %target%: Jugador denunciado
+  #⮟ Marcadores de posición: %reason%: Motivo del informe; %id%: ID del informe; %flag%: Bandera del informe
+  get: |-
+    &7====== &6Report&8: &e%id% &7======
+    &7» Jugadores&8: &6%executor%
+    &7» Reportado&8: &6%target%
+    &7» Razón&8: &6%reason% &7
+    &7» Indicador&8: &6%flag%
+    &7====== &6Report&8: &e%id% &7======
+  #⮟ Marcadores de posición: %player%: Jugador que informó; %target%: Jugador que se está comprobando;
+  #⮟ Placeholders: %reason%: Motivo de la denuncia; %id%: ID de la denuncia; %suspicion%: Sospecha que tiene el objetivo
+  check: |-
+    &7==== &6%target% &7====
+    &7» En total recibe&8: &7%received%
+    &7» Sospechoso&8: &7%suspicion%
+    &7» Último jugador registrado&8: &7%player%
+    &7» ID del último mensaje&8: &7%id%
+    &7» Motivo del último mensaje&8: &7%reason%
+    &7==== &6%target% &7====  
+
+usages:
+  admin: |-
+    &7==== &6Admin-Help &7====
+    &7/reports notify
+    &7/reports resetall
+    &7/reports reload
+    &7/reports info
+    &7/reports get <id>
+    &7/reports list [seite]
+    &7/reports delete <id>
+    &7/reports check <player/uuid>
+    &7/reports teleport <id>
+    &7/reports getuuid <player>
+    &7/reports blacklist [player/uuid]
+    &7/reports setflag <id> <open, closed, working>
+    &7==== &6Admin-Help &7====
+  default: |-
+    &7==== &6Report-Help &7====
+    &7/report <player/uuid> <reason>
+    &7/report status <list, <id>>
+    &7/report setlang <language>
+    &7==== &6Report-Help &7====

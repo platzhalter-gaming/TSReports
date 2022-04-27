@@ -1,0 +1,127 @@
+#
+# |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----|
+#    |    |       |     | |       |     | |     | |     |    |    |
+#    |    |-----| |-----| |---|   |-----| |     | |-----|    |    |-----|
+#    |          | |   \   |       |       |     | |   \      |          |
+#    |    |-----| |    \  |-----| |       |-----| |    \     |    |-----|
+#                                                      made by Todesstoss
+#
+
+#⮟重要的是⮟
+
+
+# 如果你想在插件中加入自己的语言，请注意以下几点。
+
+# 1. 要确保文件的扩展名是'.yml'。
+# 2.要确定在转移过程中没有拼写错误。
+
+# 如果你现在觉得有足够的信心来添加你自己的语言。
+# 然后我建议你复制一个默认的文件，然后改变它 #
+
+
+#⮟消息 ⮟
+
+#⮟ 前缀占位符可以在任何信息中使用（%prefix%）。
+prefix: '&cReports &8»&r'
+
+error: '%prefix% &c发生了一个错误。'
+noPermission: '%prefix% &c许可证不足。'
+playerNotFound: '%prefix% &c没有找到这名球员。'
+reportNotFound: '%prefix% &c没有找到该信息。'
+onlyPlayer: '%prefix% &c这个命令只能由玩家执行。'
+alreadyRegistered: '%prefix% &c这个/这些条目/球员已经存在。'
+#⮟ 占位符: %player%: 被报告的玩家; %target%: 被举报的玩家; %reason%: 举报的原因
+staffNotify: '%prefix% &6%player% &7已经 &6%target% &7为 &6%reason% &7报告了。'
+numberTooHigh: '%prefix% &c给出的数字太高了!'
+blacklisted: '%prefix% &c你已被禁止举报其他玩家。'
+cannotBlacklist: '%prefix% &c这名球员不能被排除在外。'
+#⮟ 占位符：%time%。在玩家可以再次报告之前的剩余时间
+reportCooldown: '%prefix% &7请等待%time% 在信息前的第二(s)秒。'
+reportYourself: '%prefix% &c你不能举报你自己!'
+
+commands:
+  #⮟ 占位符: %target%: 被举报的玩家；%reason%。举报的原因
+  report: '%prefix% &7你已经成功地&6%target% &7为&6%reason% &7注册。'
+  listAbove: '&7====== &列表 &7======'
+  #⮟ 占位符: %执行者%。报告的玩家；%target%。被举报的玩家。
+  #⮟ 占位符: %reason%: 报告的原因; %id%: 报告的ID；%flag%。报告的标志
+  listBase: '&6%executor% &7-> &6%target% &7[&e%id%&7, &e%flag%&7]'
+  #⮟ 占位符：%page%。玩家所在的页面
+  listBelow: '&7==== &6页码&8: &e%page% &7===='
+  listEmpty: '%prefix% &c目前没有任何报告。'
+  #⮟ 占位符: %target%: 被列入黑名单的玩家; %type%: 被添加/删除的玩家
+  blacklist: '%prefix% &6%target% &7被列入黑名单，从/到 %type%&7.'
+  blacklistAbove: '&7====== &8不包括 &7======'
+  #⮟ 占位符: %player%。被列入黑名单的球员
+  blacklistBase: '&e%player%&7, '
+  blacklistBelow: '&7====== &8不包括 &7======'
+  blacklistEmpty: '%prefix% &c目前，黑名单上没有球员。'
+  #⮟ 占位符：%time%。重置所需时间
+  resetAll: '%prefix% &7数据库表已被重置。 [&6%time%毫秒&7]'
+  #⮟ 占位符：%time%。重新加载的时间
+  reload: '%prefix% &cTSReports&7被成功重载。 [&6%time%毫秒&7]'
+  #⮟ 占位符：%target%。你被传送到的玩家
+  teleport: '%prefix% &7你已经连接到了&6%target%&7的服务器。&7连接。'
+  #⮟ 占位符: %target%: 目标的名称；%uuid%。目标的UUID
+  getuuid: '%prefix% &7球员的uuid &6%target% &7是&6%uuid%&7。'
+  #⮟ 占位符: %mode%: 启用/停用
+  notify: '%prefix% &7您的通知模式已更新为&8: &6%mode%'
+  #⮟ 占位符：%id%。被删除的报告的ID
+  delete: '%prefix% &7已经成功地发送了ID为&6%id%&7的信息。删除。'
+  #⮟ 占位符: %id%: 报告的ID；%flag%。报告的新标志
+  setflag: '%prefix% &7信息中的指标与ID &6%id% &7被改成了&6%flag%&7。改变了。'
+  #⮟ 占位符：%language%。玩家提供的语言
+  languageNotFound: '%prefix% &c没有发现这种语言。 &7[&6%language%&7]'
+  interlanguage: '%prefix% &7你的语言变得&6%language% &7改变了。'
+  #⮟ 占位符: %执行者%。被举报的玩家；%target%。被举报的玩家
+  #⮟ 占位符: %reason%: 报告的原因; %id%: 报告的ID；%flag%。报告的标志
+  status: |-
+    &7====== &6状况 &7======
+    &7» 执行人&8: &6%executor%
+    &7» 目的地&8: &6%target%
+    &7» 缘由&8: &6%reason%
+    &7» 身份证&8: &6%id%
+    &7» 指标&8: &6%flag%
+    &7====== &6状况 &7======
+  #⮟ 占位符: %执行者%。被举报的玩家；%target%。被举报的玩家
+  #⮟ 占位符: %reason%: 报告的原因; %id%: 报告的ID；%flag%。报告的标志
+  get: |-
+    &7====== &6报告&8: &e%id% &7======
+    &7» 玩家&8: &6%executor%
+    &7» 已报告&8: &6%target%
+    &7» 缘由&8: &6%reason%
+    &7» 指标&8: &6%flag%
+    &7====== &6报告&8: &e%id% &7======
+  #⮟ 占位符： %player%。报告的玩家; %target%: 被检查的玩家。
+  #⮟ 占位符: %reason%: 报告的原因; %id%: 报告的ID；%suspicion%。怀疑目标有
+  check: |-
+    &7==== &6%target% &7====
+    &7» 总共收到&8: &7%received%
+    &7» 怀疑&8: &7%suspicion%
+    &7» 最后注册的球员&8: &7%player%
+    &7» 最后一条信息的ID&8: &7%id%
+    &7» 最后一次留言的原因&8: &7%reason%
+    &7==== &6%target% &7====  
+
+usages:
+  admin: |-
+    &7==== &6管理员帮助 &7====
+    &7/reports notify
+    &7/reports resetall
+    &7/reports reload
+    &7/reports info
+    &7/reports get <id>
+    &7/reports list [seite]
+    &7/reports delete <id>
+    &7/reports check <spieler/uuid>
+    &7/reports teleport <id>
+    &7/reports getuuid <spieler>
+    &7/reports blacklist [spieler/uuid]
+    &7/reports setflag <id> <open, closed, working>
+    &7==== &6管理员帮助 &7====
+  default: |-
+    &7==== &6报告-帮助 &7====
+    &7/report <spieler/uuid> <reason>
+    &7/report status <list, <id>>
+    &7/report setlang <language>
+    &7==== &6报告-帮助 &7====
