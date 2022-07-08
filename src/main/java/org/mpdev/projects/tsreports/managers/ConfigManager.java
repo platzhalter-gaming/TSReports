@@ -8,51 +8,24 @@ import org.mpdev.projects.tsreports.objects.PlayerLocale;
 import org.mpdev.projects.tsreports.utils.FileUtils;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ConfigManager {
-
     private final TSReports plugin;
     private Configuration config;
-    private final File configFile;
     private final Map<Locale, Configuration> locales = new HashMap<>();
+    private List<String> bannedPlayers = new ArrayList<>();
     private java.util.Locale defaultLocale;
 
     public ConfigManager(TSReports plugin) {
         this.plugin = plugin;
-
-        Path dataFolder = plugin.getDataFolder().toPath();
-        this.configFile = new File(dataFolder + File.separator + "config.yml");
-
-        try {
-            setup();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setup() throws IOException {
-        copyFileFromResources(configFile);
-        config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
-        // Copies all locale files.
-        copyLocalesFromFolder();
-
-        for (Map.Entry<Locale, Object> entry : getLocales().entrySet()) {
-            locales.put(entry.getKey(), (Configuration) entry.getValue());
-        }
-        defaultLocale = Utils.stringToLocale(getConfig().getString("default-server-language"));
-    }
-
-    public File getConfigFile() {
-        return configFile;
+        setup();
     }
 
     public Configuration getConfig() {
@@ -61,16 +34,16 @@ public class ConfigManager {
 
     public Map<Locale, Object> getLocales() {
         Map<Locale, Object> locales = new HashMap<>();
-        try {
-            for (File file : getLocaleFiles()) {
-                Locale locale = Utils.stringToLocale(file.getName().split("\\.")[0]);
+        for (File file : getLocaleFiles()) {
+            Locale locale = Utils.stringToLocale(file.getName().split("\\.")[0]);
+
+            try {
                 locales.put(locale, ConfigurationProvider.getProvider(YamlConfiguration.class).load(file));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            plugin.getLogger().info("Found " + locales.size() + " language files.");
-            return locales;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        plugin.getLogger().info("Found " + locales.size() + " language files.");
         return locales;
     }
 
@@ -95,6 +68,60 @@ public class ConfigManager {
         return files;
     }
 
+    public String getMessage(String path) {
+        if (locales.containsKey(defaultLocale)) {
+            String msg = locales.get(defaultLocale).getString(path);
+            if (msg != null && msg.length() != 0) {
+                return Utils.color(msg);
+            }
+        }
+        plugin.getLogger().warning("The searched value was not found in the language file and the default language file: " + path);
+        return path;
+    }
+
+    public String getMessage(String path, String playerName) {
+        Locale locale = new PlayerLocale(playerName).getLocale();
+        String message;
+        String prefix = "";
+        if (locales.containsKey(locale)) {
+            message = locales.get(locale).getString(path);
+            if (message == null || message.isEmpty()) {
+                message = locales.get(defaultLocale).getString(path);
+                if (message == null || message.isEmpty()) {
+                    message = path;
+                }
+            }
+            prefix = locales.get(locale).getString("prefix", locales.get(defaultLocale).getString("prefix"));
+        } else {
+            message = getMessage(path);
+        }
+        return Utils.color(message.replace("%prefix%", prefix));
+    }
+
+    public String getMessage(String path, String playerName, Function<String, String> placeholders) {
+        String message = getMessage(path, playerName);
+        return Utils.color(placeholders.apply(message));
+    }
+
+    public boolean getBoolean(String path) {
+        if (locales.containsKey(defaultLocale)) {
+            return locales.get(defaultLocale).getBoolean(path);
+        }
+        plugin.getLogger().warning("The searched value was not found in the language file and the default language file: " + path);
+        return false;
+    }
+
+    public boolean getBoolean(String path, String playerName) {
+        Locale locale = new PlayerLocale(playerName).getLocale();
+        boolean bool;
+        if (locales.containsKey(locale)) {
+            bool = locales.get(locale).getBoolean(path);
+        } else {
+            bool = getBoolean(path);
+        }
+        return bool;
+    }
+
     public List<String> getStringList(String path) {
         if (locales.containsKey(defaultLocale)) {
             List<String> stringList = locales.get(defaultLocale).getStringList(path);
@@ -117,81 +144,68 @@ public class ConfigManager {
         return stringList.stream().map(Utils::color).collect(Collectors.toList());
     }
 
-    public String getMessage(String path, boolean prefix) {
-        if (locales.containsKey(defaultLocale)) {
-            String msg = locales.get(defaultLocale).getString(path);
-            if (msg != null && msg.length() != 0) {
-                if (prefix) {
-                    String pr = locales.get(defaultLocale).getString("prefix");
-                    return Utils.color(msg.replace("%prefix%", pr));
-                }
-                return Utils.color(msg);
-            }
-        }
-        plugin.getLogger().warning("The searched value was not found in the language file and the default language file: " + path);
-        return "";
-    }
-
-    public String getMessage(String path, String playerName) {
-        Locale locale = new PlayerLocale(playerName).getLocale();
-        String message;
-        String prefix = "";
-        if (locales.containsKey(locale)) {
-            message = locales.get(locale).getString(path);
-            if (message == null || message.isEmpty()) {
-                message = locales.get(defaultLocale).getString(path);
-            }
-            prefix = locales.get(locale).getString("prefix", locales.get(defaultLocale).getString("prefix"));
-        } else {
-            message = getMessage(path, false);
-        }
-        return Utils.color(message.replace("%prefix%", prefix));
-    }
-
     public Locale getDefaultLocale() {
         return defaultLocale;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void copyFileFromResources(File file) {
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
+    public List<String> getBannedPlayers() {
+        return bannedPlayers;
+    }
+
+    public void setup() {
+        this.config = copyConfigFile();
+        // Copies all locale files.
+        copyLocaleFiles();
+
+        for (Map.Entry<Locale, Object> entry : getLocales().entrySet()) {
+            locales.put(entry.getKey(), (Configuration) entry.getValue());
         }
-        if (!file.exists() && !file.isDirectory()) {
-            try {
-                InputStream inputStream = TSReports.getInstance().getResourceStream(file.toString());
-                Files.copy(inputStream, file.toPath());
+        defaultLocale = Utils.stringToLocale(getConfig().getString("default-server-language"));
+        bannedPlayers = getConfig().getStringList("banned-players");
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public Configuration copyConfigFile() {
+        if (!plugin.getDataFolder().exists())
+            plugin.getDataFolder().mkdir();
+
+        File file = new File(plugin.getDataFolder(), "config.yml");
+
+        if (!file.exists()) {
+            try (InputStream in = plugin.getResourceStream("config.yml")) {
+                Files.copy(in, file.toPath());
             } catch (IOException e) {
-                plugin.getLogger().severe(String.format("Error while trying to load file %s.", file.getName()));
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
+        }
+
+        try {
+            return ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void copyLocalesFromFolder(){
+    public void copyLocaleFiles() {
         Predicate<? super Path> filter = entry -> {
             String path = entry.getFileName().toString();
             return path.endsWith(".yml");
         };
         FileUtils.getFilesIn("locales", filter).forEach(file -> {
-            File destination = new File(plugin.getDataFolder().toPath() + File.separator + "locales" + File.separator + file.getName());
-            if (!destination.getParentFile().exists()) {
-                destination.getParentFile().mkdirs();
-            }
+            File destination = new File(plugin.getDataFolder(), "locales" + File.separator + file.getName());
+            if (!destination.getParentFile().exists())
+                destination.getParentFile().mkdir();
             if (!destination.exists() && !destination.isDirectory()) {
-                try {
-                    Path destinationPath = destination.toPath();
-                    if (destinationPath.startsWith(".")) {
-                        destinationPath = destinationPath.subpath(1, (int) destination.length());
-                    }
-                    InputStream inputStream = TSReports.getInstance().getResourceStream(file.toString().replace("\\", "/"));
-                    TSReports.getInstance().debug("File copy operation. \nInputStream: " + inputStream + "\nDestination Path: " + destinationPath);
-                    Files.copy(inputStream, destinationPath);
-
+                String fileString = file.toString().replace("\\", "/");
+                if (fileString.startsWith("."))
+                    fileString.substring(1);
+                if (fileString.startsWith("/"))
+                    fileString.substring(1);
+                try (InputStream in = plugin.getResourceStream(fileString)) {
+                    Files.copy(in, destination.toPath());
                 } catch (IOException e) {
-                    plugin.getLogger().severe(String.format("Error while trying to load file %s.", file.getName()));
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         });

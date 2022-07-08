@@ -4,7 +4,7 @@
 #    |    |-----| |-----| |---|   |-----| |     | |-----|    |    |-----|
 #    |          | |   \   |       |       |     | |   \      |          |
 #    |    |-----| |    \  |-----| |       |-----| |    \     |    |-----|
-#                                                      made by Todesstoss
+#                                                        made by LaurinVL
 #
 
 #⮟ IMPORTANT ⮟
@@ -24,104 +24,279 @@
 #⮟ The prefix placeholder can be used in every message (%prefix%)
 prefix: '&cReports &8»&r'
 
-error: '%prefix% &cAn error occurred.'
 noPermission: '%prefix% &cInsufficient permissions.'
 playerNotFound: '%prefix% &cThis player was not found.'
 reportNotFound: '%prefix% &cThis report was not found.'
+statusNotFound: '%prefix% &cThis status was not found.'
+nodeNotFound: '%prefix% &cThis permission node was not found.'
 onlyPlayer: '%prefix% &cThis command can only be executed by players.'
-alreadyRegistered: '%prefix% &cThis report/player already exists.'
-#⮟ Placeholders: %player%: Player that is reporting; %target%: Player that gets reported; %reason%: Reason for reporting
-staffNotify: '%prefix% &6%player% &7has reported &6%target% &7for &6%reason%&7.'
-numberTooHigh: '%prefix% &cGiven number is too high!'
+commandDisabled: '%prefix% &cThis command has been disabled.'
+#⮟ Placeholders: %operator%, %target%, %reason%
+staffNotify: '%prefix% &6%operator% &7has reported &6%target% &7for &6%reason%&7.'
+numberTooHigh: '%prefix% &cGiven number is too high.'
 blacklisted: '%prefix% &cYou have been blacklisted from reporting.'
-cannotBlacklist: '%prefix% &cThis player cannot be blacklisted.'
-#⮟ Placeholders: %time%: Time left before the player can report again
+unableToReport: '%prefix% &cThis player can not be reported.'
+#⮟ Placeholders: %time%
 reportCooldown: '%prefix% &7Please wait &e%time% second(s) &7before reporting.'
-reportYourself: '%prefix% &cYou cannot report yourself!'
+reportYourself: '%prefix% &cYou cannot report yourself.'
+mustBeNumber: '%prefix% &cThe value you have given is not a number.'
+alreadyLoggedIn: '%prefix% &7You are already logged in.'
+notLoggedIn: '%prefix% &7You are currently not logged in.'
+cannotDeleteClaimedReport: '%prefix% &7This report has been claimed and cannot be deleted.'
+alreadyClaimed: '%prefix% &7This report is already claimed.'
+notClaimed: '%prefix% &7This report has not been claimed.'
+alreadyCompleted: '%prefix% &7This report has already been completed.'
+luckPerms: '%prefix% &cLuckPerms is needed for this process.'
 
-commands:
-  #⮟ Placeholders: %target%: Player that got reported; %reason%: Reason for reporting
-  report: '%prefix% &7You have &asuccessfully&7 reported &6%target% &7for &6%reason%&7.'
+otherReason:
+  message: '%prefix% &7Type in the reason you want to report this player.'
+  cancelled: '%prefix% &7The operation has been &ccancelled&7.'
+
+staffJoin:
+  #⮟ Placeholders: %reportsCount%, %vulnerability%, %loggedIn%
+  message: |-
+    &f
+    &7- &6Reports Since Last Restart&8: &c%reportsCount%
+    &f
+    &7- &6Server has %vulnerability%
+    &f
+    &7- &6You are currently %loggedIn%
+    &f
+  vulnerability:
+    low: '&aLOW_VULNERABILITY &7(No Moderation Needed)'
+    medium: '&eMEDIUM_VULNERABILITY &7(Some Moderation Needed)'
+    high: '&cHIGH_VULNERABILITY &7(Moderation Needed)'
+
+gui:
+  backbutton:
+    name: '&7Back'
+  barrier:
+    name: '&7//'
+  main:
+    title: '&6&lTSReports GUI'
+    languageselector:
+      name: '&eLanguage Selector'
+    managereports:
+      name: '&eManage Reports'
+    adminpanel:
+      name: '&eAdmin Panel'
+  languageselector:
+      title: '&eLangSelector - Current: &8{0}'
+  adminpanel:
+    title: '&eAdmin Panel'
+    reload:
+      name: '&aReload all configuration files'
+    cleardatabase:
+      name: '&aClear the report database table'
+    status:
+      name: '&eStatus of the server:'
+      #⮟ Placeholders: %reportsCount%, %storageProvider%, %vulnerability%, %totalData%, %staffOnline%
+      lore:
+        - '&f'
+        - '&7Total Reports &8» &6%reportsCount%'
+        - '&f'
+        - '&7Total Data &8» &6%totalData%'
+        - '&7Storage Provider &8» &6%storageProvider%'
+        - '&f'
+        - '&7Server has %vulnerability%'
+        - '&f'
+        - '&7Staff Online &8» &6%staffOnline%'
+        - '&f'
+  managereports:
+    title: '&eManage Reports - Total &6{0}'
+    next:
+      name: '&7Next Page'
+    previous:
+      name: '&7Previous Page'
+    report:
+      name: '&bReport #%id%'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &fStatus &8» &f%status%'
+        - '&f'
+        - '&8» &fSubmitted by &8» &b%operator%'
+        - '&8» &fReported &8» &c%player%'
+        - '&f'
+        - '&8» &fReason &8» &b%reason%'
+        - '&8» &fServer &8» &b%server%'
+        - '&f'
+  reportpanel:
+    title: '&eReport Panel'
+    reasons:
+      hacking: 'Hacking'
+      flying: 'Flying'
+      xray: 'X-Ray'
+      griefing: 'Griefing'
+      name: 'Name'
+      skin: 'Skin'
+      other: 'Other'
+  specificreport:
+    title: '&bReport #%id%'
+    delete:
+      name: '&cDelete'
+      lore:
+        - '&7Click to delete this report'
+    info:
+      name: '&aInformation'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &fStatus &8» &f%status%'
+        - '&f'
+        - '&8» &fSubmitted by &8» &b%operator%'
+        - '&8» &fReported &8» &c%player%'
+        - '&f'
+        - '&8» &fReason &8» &b%reason%'
+        - '&8» &fServer &8» &b%server%'
+        - '&f'
+    claim:
+      name: '&eClaim'
+      lore:
+        - '&7Click to claim this report'
+    complete:
+      name: '&bComplete'
+      lore:
+        - '&7Click to complete this report'
+        - '&f'
+        - '&c&lDISCLAIMER:'
+        - '&7Only works if you have claimed'
+        - '&7this report'
+  statuspanel:
+    title: '&eYour Reports'
+    report:
+      name: '&bReport #%id%'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &fStatus &8» &f%status%'
+        - '&f'
+        - '&8» &fSubmitted by &8» &b%operator%'
+        - '&8» &fReported &8» &c%player%'
+        - '&f'
+        - '&8» &fReason &8» &b%reason%'
+        - '&8» &fServer &8» &b%server%'
+        - '&f'
+    reportsEmpty: '&cYou currently have no existing reports.'
+  confirmation:
+    title: '&eConfirmation'
+    confirm:
+      name: '&7Click here to &aConfirm'
+    return:
+      name: '&7Click here to &cReturn'
+
+command-messages:
+  #⮟ Placeholders: %player%, %reason%
+  report: '%prefix% &7You have &asuccessfully&7 reported &6%player%&7 for &6%reason%&7.'
+  #⮟ Placeholders: %page%
   listAbove: '&7====== &6List &7======'
-  #⮟ Placeholders: %executor%: Player that reported; %target%: Player that got reported;
-  #⮟ Placeholders: %reason%: Reason for reporting; %id%: ID of report; %flag%: Flag of report
-  listBase: '&6%executor% &7-> &6%target% &7[&e%id%&7, &e%flag%&7]'
-  #⮟ Placeholders: %page%: Page the player is on
+  #⮟ Placeholders: %executor%, %target%, %id%, %flag%
+  listBase: '&6%operator% &7-> &6%player% &7[&e%id%&7]'
+  #⮟ Placeholders: %page%
   listBelow: '&7==== &6Page&8: &e%page% &7===='
   listEmpty: '%prefix% &cThere are currently no reports.'
-  #⮟ Placeholders: %target%: Player that got blacklisted; %type%: added/removed
-  blacklist: '%prefix% &6%target% &7has been %type% from/to the blacklist.'
-  blacklistAbove: '&7====== &8Blacklisted &7======'
-  #⮟ Placeholders: %player%: Blacklisted player
-  blacklistBase: '&e%player%&7, '
-  blacklistBelow: '&7====== &8Blacklisted &7======'
-  blacklistEmpty: '%prefix% &cThere are currently no blacklisted players.'
-  #⮟ Placeholders: %time%: Time it took to reset
-  resetAll: '%prefix% &7The database tables have been reset. [&6%time%ms&7]'
-  #⮟ Placeholders: %time%: Time it took to reload
+  #⮟ Placeholders: %time%
+  clear: '%prefix% &7The database tables have been reset. [&6%time%ms&7]'
+  #⮟ Placeholders: %time%
   reload: '%prefix% &cTSReports &7has been &asuccessfully &7reloaded [&6%time%ms&7]'
-  #⮟ Placeholders: %target%: Player that you have been teleported to
-  teleport: '%prefix% &7You have connected to the server of &6%target%&7.'
-  #⮟ Placeholders: %target%: Name of target; %uuid%: UUID of target
-  getuuid: '%prefix% &7The uuid of player &6%target% &7is &6%uuid%&7.'
-  #⮟ Placeholders: %mode%: enabled/disabled
-  notify: '%prefix% &7Your notification-mode has been updated to&8: &6%mode%'
-  #⮟ Placeholders: %id%: ID of report that got deleted
-  delete: '%prefix% &7You have &asuccessfully &7deleted the report with id &6%id%&7.'
-  #⮟ Placeholders: %id%: ID of report; %flag%: New flag of report
-  setflag: '%prefix% &7Report with id &6%id% &7has been set to &6%flag%&7.'
-  #⮟ Placeholders: %language%: Language the player has given
-  languageNotFound: '%prefix% &cThis language was not found. &7[&6%language%&7]'
+  #⮟ Placeholders: %id%
+  claim: '%prefix% &7You have &asuccessfully&7 claimed the report &6%id%&7.'
+  #⮟ Placeholders: %id%
+  delete: '%prefix% &7You have &asuccessfully&7 deleted the report &6%id%&7.'
+  #⮟ Placeholders: %language%
   interlanguage: '%prefix% &7Your language has been set to &6%language%&7.'
-  #⮟ Placeholders: %executor%: Player that reported; %target%: Player that got reported
-  #⮟ Placeholders: %reason%: Reason for reporting; %id%: ID of report; %flag%: Flag of report
-  status: |-
-    &7====== &6Status &7======
-    &7» Executor&8: &6%executor%
-    &7» Target&8: &6%target%
-    &7» Reason&8: &6%reason%
-    &7» ID&8: &6%id%
-    &7» Flag&8: &6%flag%
-    &7====== &6Status &7======
-  #⮟ Placeholders: %executor%: Player that reported; %target%: Player that got reported
-  #⮟ Placeholders: %reason%: Reason for reporting; %id%: ID of report; %flag%: Flag of report
+  #⮟ Placeholders: %id%, %status%
+  status: '%prefix% &7The status of report &6%id% &7has been set to &6%status%&7.'
+  login: '%prefix% &7You have been &asuccessfully&7 logged &ain&7.'
+  logout: '%prefix% &7You have been &asuccessfully&7 logged &cout&7.'
+  addperm: '%prefix% &7Player &6%player% &7now has the permission &6%permission%&7.'
+  #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
   get: |-
     &7====== &6Report&8: &e%id% &7======
-    &7» Player&8: &6%executor%
-    &7» Reported&8: &6%target%
+    &7» Operator&8: &6%operator%
+    &7» Reported&8:
+    &7»   - Name&8: &6%player%
+    &7»   - UUID&8: &6%uuid%
+    &7»   - IP&8: &6%address%
+    &7»
+    &7» Server&8: &6%server%
+    &7» Status&8: &6%status%
     &7» Reason&8: &6%reason%
-    &7» Flag&8: &6%flag%
     &7====== &6Report&8: &e%id% &7======
-  #⮟ Placeholders: %player%: Player that reported; %target%: Player that is being checked;
-  #⮟ Placeholders: %reason%: Reason for reporting; %id%: ID of report; %suspicion%: Suspicion the target has
-  check: |-
-    &7==== &6%target% &7====
-    &7» Total Received&8: &7%received%
-    &7» Suspicion&8: &7%suspicion%
-    &7» Last Reported Player&8: &7%player%
-    &7» Last Report ID&8: &7%id%
-    &7» Last Report Reason&8: &7%reason%
-    &7==== &6%target% &7====  
+  permissionNodes: |-
+    &7These are the existing permission nodes:
+    &7
+    &6GUI &7- tsreports.gui
+    &6LOGIN &7- tsreports.login
+    &6LOGOUT &7- tsreports.logout
+    &6CLEAR &7- tsreports.clear
+    &6GET &7- tsreports.get
+    &6DELETE &7- tsreports.delete
+    &6LIST &7- tsreports.list
+    &6STATUS &7- tsreports.status
+    &6REPORT &7- tsreports.use
+    &6LANGUAGE &7- tsreports.language
+    &6STATUSPANEL &7- tsreports.statuspanel
+    &6ADMIN &7- tsreports.admin
+    &6GUI_ADMIN &7- tsreports.gui.admin
+    &6GUI_MANAGEREPORTS &7- tsreports.gui.managereports
+    &6AUTOLOGIN &7- tsreports.autologin
 
-usages:
-  admin: |-
-    &7==== &6Admin-Help &7====
-    &7/reports notify
-    &7/reports resetall
-    &7/reports reload
-    &7/reports info
-    &7/reports get <id>
-    &7/reports list [page]
-    &7/reports delete <id>
-    &7/reports check <player/uuid>
-    &7/reports teleport <id>
-    &7/reports getuuid <player>
-    &7/reports blacklist [player/uuid]
-    &7/reports setflag <id> <open, closed, working>
-    &7==== &6Admin-Help &7====
-  default: |-
-    &7==== &6Report-Help &7====
-    &7/report <player/uuid> <reason>
-    &7/report status <list, <id>>
-    &7/report setlang <language>
-    &7==== &6Report-Help &7====
+reportHelp:
+  above: '&7==== &6Report-Help &7===='
+  optional: '&e[] &7= optional'
+  required: '&e<> &7= required'
+  below: '&7==== &6Report-Help &7===='
+
+adminHelp:
+  above: '&7==== &6Admin-Help &7===='
+  optional: '&e[] &7= optional'
+  required: '&e<> &7= required'
+  below: '&7==== &6Admin-Help &7===='
+
+commands:
+  login:
+    usage: '&7/reports login'
+    enabled: true
+  logout:
+    usage: '&7/reports logout'
+    enabled: true
+  gui:
+    usage: '&7/reports gui'
+    enabled: true
+  about:
+    usage: '&7/reports about'
+    enabled: true
+  clear:
+    usage: '&7/reports clear'
+    enabled: true
+  reload:
+    usage: '&7/reports reload'
+    enabled: true
+  claim:
+    usage: '&7/reports claim <id>'
+    enabled: true
+  get:
+    usage: '&7/reports get <id>'
+    enabled: true
+  delete:
+    usage: '&7/reports delete <id>'
+    enabled: true
+  list:
+    usage: '&7/reports list [page]'
+    enabled: true
+  status-admin:
+    usage: '&7/reports status <id> <new, wip, complete>'
+    enabled: true
+  status-player:
+    usage: '&7/report status [page]'
+    enabled: true
+  report:
+    usage: '&7/report <player/uuid>'
+    enabled: true
+  language:
+    usage: '&7/report language'
+    enabled: true
+  addperm:
+    usage: '&7/reports addperm <node> <player/uuid>'
+    enabled: true

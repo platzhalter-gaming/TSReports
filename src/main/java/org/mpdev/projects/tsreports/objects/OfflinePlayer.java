@@ -7,30 +7,21 @@ import java.util.UUID;
 
 public class OfflinePlayer {
 
-    private final Locale defaultLocale = TSReports.getInstance().getConfigManager().getDefaultLocale();
-    private String name, playerIp;
-    private UUID uuid;
+    private final UUID uuid;
+    private String name, address;
     private Locale locale;
-    private boolean notify;
+    private boolean loggedIn;
 
-    public OfflinePlayer(UUID uuid, String name, String playerIp, Locale locale) {
-        this(uuid, name, playerIp, locale, false);
+    public OfflinePlayer(UUID uuid, String name, String address) {
+        this(uuid, name, address, TSReports.getInstance().getConfigManager().getDefaultLocale(), false);
     }
 
-    public OfflinePlayer(UUID uuid, String name, String playerIp, Locale locale, boolean notify) {
+    public OfflinePlayer(UUID uuid, String name, String address, Locale locale, boolean loggedIn) {
         this.uuid = uuid;
         this.name = name;
-        this.playerIp = playerIp;
+        this.address = address;
         this.locale = locale;
-        this.notify = notify;
-    }
-
-    public boolean isNotify() {
-        return notify;
-    }
-
-    public void setNotify(boolean notify) {
-        this.notify = notify;
+        this.loggedIn = loggedIn;
     }
 
     public String getName() {
@@ -41,27 +32,32 @@ public class OfflinePlayer {
         this.name = name;
     }
 
-    public UUID getUniqueId() {
-        return uuid;
-    }
-
-    public void setUniqueId(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getPlayerIp() {
-        return playerIp;
-    }
-
-    public void setPlayerIp(String playerIp) {
-        this.playerIp = playerIp;
-    }
-
     public Locale getLocale() {
-        return locale != null ? locale : defaultLocale;
+        return locale;
     }
 
     public void setLocale(Locale locale) {
         this.locale = locale;
     }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
+
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn = loggedIn;
+    }
+
+    public UUID getUniqueId() {
+        return uuid;
+    }
+
 }

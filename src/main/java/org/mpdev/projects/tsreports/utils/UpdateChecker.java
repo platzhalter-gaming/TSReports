@@ -12,7 +12,6 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 public class UpdateChecker {
-
     private final TSReports plugin;
     private final Configuration config;
     private final String currentVersion;
@@ -20,8 +19,8 @@ public class UpdateChecker {
 
     public UpdateChecker(TSReports plugin) {
         this.plugin = plugin;
-        this.config = plugin.getConfig();
-        this.currentVersion = plugin.getDescription().getVersion();
+        this.config = TSReports.getInstance().getConfigManager().getConfig();
+        this.currentVersion = plugin.getDescription().getName();
     }
 
     public void start() {

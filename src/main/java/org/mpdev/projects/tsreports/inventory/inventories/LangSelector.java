@@ -27,8 +27,7 @@ public class LangSelector extends UIFrame {
     public String getTitle() {
         Locale viewerLocale = plugin.getOfflinePlayers().get(getViewer().getName()).getLocale();
         return Messages.GUI_LANGUAGESELECTOR_TITLE.getString(getViewer().getName())
-                .replace("{0}", viewerLocale.toString());
-    }
+                .replace("{0}", viewerLocale.toString());    }
 
     @Override
     public int getSize() {
@@ -37,9 +36,7 @@ public class LangSelector extends UIFrame {
 
     @Override
     public void createComponents() {
-        if (getParent() != null) {
-            add(Components.getBackComponent(getParent(), 53, getViewer()));
-        }
+        add(Components.getBackComponent(getParent(), 53, getViewer()));
 
         List<String> localeNames = configManager.getAvailableLocales().stream().map(Locale::toString).sorted().collect(Collectors.toList());
         for (int i = 0; i < localeNames.size(); i++){

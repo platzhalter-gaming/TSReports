@@ -1,132 +1,139 @@
 package org.mpdev.projects.tsreports.managers;
 
-import com.zaxxer.hikari.HikariDataSource;
 import net.md_5.bungee.config.Configuration;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
-import org.mpdev.projects.tsreports.utils.SqlQuery;
+import org.mpdev.projects.tsreports.objects.Status;
+import org.mpdev.projects.tsreports.storage.DBCore;
+import org.mpdev.projects.tsreports.storage.H2Core;
+import org.mpdev.projects.tsreports.storage.MySQLCore;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class StorageManager {
 
-    private final TSReports plugin;
-    private final HikariDataSource source = new HikariDataSource();
-    boolean mysqlEnabled;
+    private final TSReports plugin = TSReports.getInstance();
+    private DBCore core;
 
-    public StorageManager(TSReports plugin) {
-        this.plugin = plugin;
-        Configuration config = plugin.getConfig();
-        String pluginName = plugin.getDescription().getName();
-        source.setPoolName("[" + pluginName + "]" + " Hikari");
-        mysqlEnabled = plugin.getConfig().getBoolean("mysql.enabled");
-        plugin.getLogger().info("Loading storage provider: " + getStorageProvider());
-        if (mysqlEnabled) {
-            source.setJdbcUrl("jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getString("mysql.port") + "/" + config.getString("mysql.database") + "?useSSL=false&characterEncoding=utf-8");
-            source.setUsername(config.getString("mysql.username"));
-            source.setPassword(config.getString("mysql.password"));
+    public StorageManager() {
+        initializeTables();
+        checkNewColumns();
+    }
+
+    public void initializeTables() {
+        Configuration config = plugin.getConfigManager().getConfig();
+        if (config.getBoolean("mysql.enabled")) {
+            core = new MySQLCore(
+                    config.getString("mysql.host"),
+                    config.getString("mysql.database"),
+                    config.getInt("mysql.port"),
+                    config.getString("mysql.username"),
+                    config.getString("mysql.password"));
         } else {
-            source.setDriverClassName("org.h2.Driver");
-            source.setJdbcUrl("jdbc:h2:./plugins/" + pluginName + "/" + pluginName);
+            core = new H2Core();
         }
-        setup();
-    }
-
-    public String getStorageProvider(){
-        return mysqlEnabled ? "MySQL" : "H2";
-    }
-
-    private void executeUpdate(String query) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (!core.existsTable("tsreports_reports")) {
+            plugin.getLogger().info("Creating table: tsreports_reports");
+            String query = "CREATE TABLE IF NOT EXISTS tsreports_reports (" +
+                    " id BIGINT(20) NOT NULL," +
+                    " name VARCHAR(16)," +
+                    " uuid VARCHAR(72)," +
+                    " ip VARCHAR(25)," +
+                    " reason VARCHAR(255)," +
+                    " operator VARCHAR(16)," +
+                    " status VARCHAR(20)," +
+                    " claimed VARCHAR(72)," +
+                    " PRIMARY KEY (id))";
+            core.execute(query);
+        }
+        if (!core.existsTable("tsreports_reporthistory")) {
+            plugin.getLogger().info("Creating table: tsreports_reporthistory");
+            String query = "CREATE TABLE IF NOT EXISTS tsreports_reporthistory (" +
+                    " id BIGINT(20) NOT NULL auto_increment," +
+                    " name VARCHAR(16)," +
+                    " uuid VARCHAR(72)," +
+                    " ip VARCHAR(25)," +
+                    " reason VARCHAR(255)," +
+                    " operator VARCHAR(16)," +
+                    " status VARCHAR(20)," +
+                    " claimed VARCHAR(72)," +
+                    " PRIMARY KEY (id))";
+            core.execute(query);
+        }
+        if (!core.existsTable("tsreports_players")) {
+            plugin.getLogger().info("Creating table: tsreports_players");
+            String query = "CREATE TABLE IF NOT EXISTS tsreports_players (" +
+                    " uuid VARCHAR(72) NOT NULL," +
+                    " name VARCHAR(16)," +
+                    " ip VARCHAR(25)," +
+                    " language VARCHAR(10)," +
+                    " loggedIn VARCHAR(10)," +
+                    " PRIMARY KEY (uuid))";
+            core.execute(query);
         }
     }
 
-    public void setup() {
-        executeUpdate(SqlQuery.CREATE_REPORTS_TABLE.getQuery());
-        executeUpdate(SqlQuery.CREATE_REPORTHISTORY_TABLE.getQuery());
-        executeUpdate(SqlQuery.CREATE_PLAYERS_TABLE.getQuery());
-        executeUpdate(SqlQuery.ADD_COLUMN_IF_NOT_EXISTS.getQuery()
-                .replace("{0}", "tsreports_players")
-                .replace("{1}", "first_login LONGTEXT NOT NULL"));
-        executeUpdate(SqlQuery.ADD_COLUMN_IF_NOT_EXISTS.getQuery()
-                .replace("{0}", "tsreports_players")
-                .replace("{1}", "last_login LONGTEXT NOT NULL"));
+    public void checkNewColumns() {
+        core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
+                "tsreports_reports", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+        core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
+                "tsreports_reporthistory", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+    }
+
+    public String getStorageProvider() {
+        return plugin.getConfigManager().getConfig().getBoolean("mysql.enabled") ? "MySQL" : "H2";
     }
 
     public void addReportToReports(Report report) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.ADD_REPORT_TO_REPORTS.getQuery())) {
-            ps.setString(1, report.getPlayerName());
-            ps.setString(2, report.getPlayerUuid().toString());
-            ps.setString(3, report.getPlayerIp());
-            ps.setString(4, report.getTargetName());
-            ps.setString(5, report.getTargetUuid().toString());
-            ps.setString(6, report.getTargetIp());
-            ps.setString(7, report.getReason());
-            ps.setString(8, String.valueOf(report.getTime()));
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String query = String.format("INSERT INTO tsreports_reports (id, name, uuid, ip, reason, operator, status) VALUES ('%s','%s','%s','%s','%s','%s','%s')",
+                report.getReportId(),
+                report.getPlayerName(),
+                report.getUniqueId().toString(),
+                report.getAddress(),
+                report.getReason(),
+                report.getOperator(),
+                report.getStatus().getStatusName());
+        core.executeUpdateAsync(query);
     }
 
     public void addReportToHistory(Report report) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.ADD_REPORT_TO_HISTORY.getQuery())) {
-            ps.setString(1, report.getPlayerName());
-            ps.setString(2, report.getPlayerUuid().toString());
-            ps.setString(3, report.getPlayerIp());
-            ps.setString(4, report.getTargetName());
-            ps.setString(5, report.getTargetUuid().toString());
-            ps.setString(6, report.getTargetIp());
-            ps.setString(7, report.getReason());
-            ps.setString(8, String.valueOf(report.getTime()));
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String query = String.format("INSERT INTO tsreports_reporthistory (name, uuid, ip, reason, operator, status) VALUES ('%s','%s','%s','%s','%s','%s')",
+                report.getPlayerName(),
+                report.getUniqueId().toString(),
+                report.getAddress(),
+                report.getReason(),
+                report.getOperator(),
+                report.getStatus().getStatusName());
+        core.executeUpdateAsync(query);
     }
 
-    public void addPlayer(OfflinePlayer player) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.ADD_PLAYER_TO_PLAYERS_TABLE.getQuery())) {
-            ps.setString(1, player.getUniqueId().toString());
-            ps.setString(2, player.getName());
-            ps.setString(3, player.getPlayerIp());
-            ps.setString(4, plugin.getConfigManager().getDefaultLocale().toString());
-            ps.setString(5, String.valueOf(new Timestamp(System.currentTimeMillis()).getTime()));
-            ps.setString(6, String.valueOf(new Timestamp(System.currentTimeMillis()).getTime()));
-            ps.setString(7, player.isNotify() ? "enabled" : "disabled");
-            ps.executeUpdate();
-            plugin.debug(String.format("%s has been added to the database.", player.getName()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void resetReports() {
-        executeUpdate(SqlQuery.DELETE_ALL_REPORTS.getQuery());
-        plugin.debug("All reports have been deleted!");
+    public void deleteReport(int reportId) {
+        String query = String.format("DELETE FROM tsreports_reports WHERE id = '%s'",
+                reportId);
+        core.executeUpdateAsync(query);
     }
 
     public Report getReport(int reportId) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.GET_REPORT.getQuery())) {
-            ps.setInt(1, reportId);
-            ResultSet result = ps.executeQuery();
+        String query = String.format("SELECT * FROM tsreports_reports WHERE id = '%s'", reportId);
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
             if (result.next()) {
-                String playerName = result.getString("playerName");
-                UUID playerUuid = UUID.fromString(result.getString("playerUuid"));
-                String playerIp = result.getString("playerIp");
-                String targetName = result.getString("targetName");
-                UUID targetUuid = UUID.fromString(result.getString("targetUuid"));
-                String targetIp = result.getString("targetIp");
+                String name = result.getString("name");
+                UUID uuid = UUID.fromString(result.getString("uuid"));
+                String ip = result.getString("ip");
                 String reason = result.getString("reason");
-                String flag = result.getString("flag");
-                long time = result.getLong("time");
-                int id = result.getInt("id");
-                return new Report(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, time, id);
+                String operator = result.getString("operator");
+                String server = result.getString("server");
+                Status status = getStatus(result.getString("status"));
+                UUID claimed = null;
+                if (result.getString("claimed") != null) {
+                    claimed = UUID.fromString(result.getString("claimed"));
+                }
+                return new Report(name, uuid, ip, reason, operator, server, status, reportId, claimed);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -134,124 +141,51 @@ public class StorageManager {
         return null;
     }
 
-    public List<Report> getReportsFromPlayer(String uuidOrName) {
-        String query = uuidOrName.length() == 36
-                ? SqlQuery.GET_REPORTS_WITH_UUID.getQuery()
-                : SqlQuery.GET_REPORTS_WITH_NAME.getQuery();
-        List<Report> reports = new ArrayList<>();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setString(1, uuidOrName);
-            ResultSet result = ps.executeQuery();
-            while (result.next()) {
-                String playerName = result.getString("playerName");
-                UUID playerUuid = UUID.fromString(result.getString("playerUuid"));
-                String playerIp = result.getString("playerIp");
-                String targetName = result.getString("targetName");
-                UUID targetUuid = UUID.fromString(result.getString("targetUuid"));
-                String targetIp = result.getString("targetIp");
-                String reason = result.getString("reason");
-                String flag = result.getString("flag");
-                long time = result.getLong("time");
-                int id = result.getInt("id");
-                reports.add(new Report(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, time, id));
+    public OfflinePlayer getOfflinePlayer(UUID wantedPlayer) {
+        String query = String.format("SELECT * FROM tsreports_players WHERE uuid = '%s'", wantedPlayer);
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
+            if (result.next()) {
+                String name = result.getString("name");
+                String ip = result.getString("ip");
+                String[] l = result.getString("language").split("_");
+                Locale locale = new Locale(l[0], l[1]);
+                boolean loggedIn = result.getString("loggedIn").equals("true");
+                return new OfflinePlayer(wantedPlayer, name, ip, locale, loggedIn);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return reports;
+        return null;
     }
 
-    public void deleteReport(int reportId) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.DELETE_REPORT.getQuery())) {
-            ps.setInt(1, reportId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteReportsFromPlayer(String uuidOrName) {
-        String query = uuidOrName.length() == 36
-                ? SqlQuery.DELETE_REPORTS_WITH_UUID.getQuery()
-                : SqlQuery.DELETE_REPORTS_WITH_NAME.getQuery();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setString(1, uuidOrName);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public List<Report> getAllReports() {
-        List<Report> reports = new ArrayList<>();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.SELECT_ALL_REPORTS.getQuery())) {
-            ResultSet result = ps.executeQuery();
-            while (result.next()) {
-                String playerName = result.getString("playerName");
-                UUID playerUuid = UUID.fromString(result.getString("playerUuid"));
-                String playerIp = result.getString("playerIp");
-                String targetName = result.getString("targetName");
-                UUID targetUuid = UUID.fromString(result.getString("targetUuid"));
-                String targetIp = result.getString("targetIp");
-                String reason = result.getString("reason");
-                String flag = result.getString("flag");
-                long time = result.getLong("time");
-                int id = result.getInt("id");
-                reports.add(new Report(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, time, id));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return reports;
-    }
-
-    public Map<String, OfflinePlayer> getAllPlayers() {
-        Map<String, OfflinePlayer> offlinePlayers = new HashMap<>();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.SELECT_ALL_PLAYERS.getQuery())) {
-            ResultSet result = ps.executeQuery();
+    public Map<String, OfflinePlayer> getAllOfflinePlayers() {
+        String query = "SELECT * FROM tsreports_players";
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
+            Map<String, OfflinePlayer> offlinePlayers = new HashMap<>();
             while (result.next()) {
                 UUID uuid = UUID.fromString(result.getString("uuid"));
                 String name = result.getString("name");
                 String ip = result.getString("ip");
                 String[] l = result.getString("language").split("_");
-                Locale language = new Locale(l[0], l[1]);
-                boolean notify = result.getString("notify").equals("enabled");
-                offlinePlayers.put(name, new OfflinePlayer(uuid, name, ip, language, notify));
+                Locale locale = new Locale(l[0], l[1]);
+                boolean loggedIn = result.getString("loggedIn").equals("true");
+                offlinePlayers.put(name, new OfflinePlayer(uuid, name, ip, locale, loggedIn));
             }
             plugin.getLogger().info(offlinePlayers.size() + " offline players loaded.");
             return offlinePlayers;
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return offlinePlayers;
-    }
-
-    public OfflinePlayer getPlayer(String uuidOrName) {
-        String query = uuidOrName.length() == 36
-                ? SqlQuery.GET_PLAYER_WITH_UUID.getQuery()
-                : SqlQuery.GET_PLAYER_WITH_NAME.getQuery();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setString(1, uuidOrName);
-            ResultSet result = ps.executeQuery();
-            if (result.next()) {
-                UUID uuid = UUID.fromString(result.getString("uuid"));
-                String name = result.getString("name");
-                String ip = result.getString("ip");
-                String[] l = result.getString("language").split("_");
-                Locale language = new Locale(l[0], l[1]);
-                boolean notify = result.getString("notify").equals("enabled");
-                return new OfflinePlayer(uuid, name, ip, language, notify);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new HashMap<>();
     }
 
     public int getReportsCount() {
+        String query = "SELECT COUNT(*) FROM tsreports_reports";
         int count = 0;
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM `tsreports_reports`")) {
-            ResultSet result = ps.executeQuery();
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
             result.next();
             count = result.getInt(1);
             return count;
@@ -261,101 +195,175 @@ public class StorageManager {
         return count;
     }
 
-    public void updatePlayerName(OfflinePlayer player) {
-        String oldName = TSReports.getInstance().getOfflinePlayers().get(player.getName()).getName();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.UPDATE_PLAYER_NAME.getQuery())) {
-            ps.setString(1, player.getName());
-            ps.setString(2, player.getUniqueId().toString());
-            plugin.debug(String.format("Update player name: %s -> %s", oldName, player.getName()));
-            ps.executeUpdate();
+    public int getStoredReportsCount() {
+        String query = "SELECT COUNT(*) FROM tsreports_reporthistory";
+        int count = 0;
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
+            result.next();
+            count = result.getInt(1);
+            return count;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return count;
     }
 
-    public void updatePlayerLastLogin(UUID uuid) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.UPDATE_PLAYER_LAST_LOGIN.getQuery())) {
-            ps.setLong(1, new Timestamp(System.currentTimeMillis()).getTime());
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void addPlayer(OfflinePlayer player) {
+        String query = String.format("INSERT INTO tsreports_players (uuid, name, ip, language, loggedIn) VALUES ('%s','%s','%s','%s','%s')",
+                player.getUniqueId().toString(),
+                player.getName(),
+                player.getAddress(),
+                player.getLocale().toString(),
+                player.isLoggedIn() ? "true" : "false");
+        core.executeUpdateAsync(query);
+        plugin.debug(String.format("%s has been successfully added to the database.", player.getName()));
+    }
+
+    public void updatePlayerName(OfflinePlayer player) {
+        String query = String.format("UPDATE tsreports_players SET name = '%s' WHERE uuid = '%s'",
+                player.getName(),
+                player.getUniqueId().toString());
+        String oldName = TSReports.getInstance().getOfflinePlayers().get(player.getName()).getName();
+        core.executeUpdateAsync(query);
+        plugin.debug(String.format("Update player name: %s -> %s", oldName, player.getName()));
     }
 
     public void updatePlayerIp(OfflinePlayer player) {
-        String newIp = player.getPlayerIp();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.UPDATE_PLAYER_IP.getQuery())) {
-            ps.setString(1, newIp);
-            ps.setString(2, player.getUniqueId().toString());
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String query = String.format("UPDATE tsreports_players SET ip = '%s' WHERE uuid = '%s'",
+                player.getAddress(),
+                player.getUniqueId().toString());
+        core.executeUpdateAsync(query);
     }
 
     public void updateLanguage(UUID uuid, Locale locale) {
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.UPDATE_PLAYER_LOCALE.getQuery())) {
-            ps.setString(1, locale.toString());
-            ps.setString(2, uuid.toString());
-            ps.executeUpdate();
+        String query = String.format("UPDATE tsreports_players SET language = '%s' WHERE uuid = '%s'",
+                locale.toString(),
+                uuid.toString());
+        core.executeUpdateAsync(query);
+    }
+
+    public void updateLoggedStatus(UUID uuid, boolean loggedIn) {
+        String query = String.format("UPDATE tsreports_players SET loggedIn = '%s' WHERE uuid = '%s'",
+                loggedIn ? "true" : "false",
+                uuid.toString());
+        core.executeUpdateAsync(query);
+    }
+
+    public void updateClaimed(int reportId, UUID claimed) {
+        String query = String.format("UPDATE tsreports_reports SET claimed = '%s' WHERE id = '%s'",
+                claimed.toString(),
+                reportId);
+        core.executeUpdateAsync(query);
+    }
+
+    public void updateStatus(int id, Status status) {
+        String query = String.format("UPDATE tsreports_reports SET status = '%s' WHERE id = '%s'",
+                status.getStatusName(),
+                id);
+        core.executeUpdateAsync(query);
+    }
+
+    public List<Report> getAllReports() {
+        String query = "SELECT * FROM tsreports_reports";
+        List<Report> reports = new ArrayList<>();
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
+            while (result.next()) {
+                String name = result.getString("name");
+                UUID uuid = UUID.fromString(result.getString("uuid"));
+                String ip = result.getString("ip");
+                String reason = result.getString("reason");
+                String operator = result.getString("operator");
+                String server = result.getString("server");
+                Status status = getStatus(result.getString("status"));
+                int reportId = result.getInt("id");
+                UUID claimed = null;
+                if (result.getString("claimed") != null) {
+                    claimed = UUID.fromString(result.getString("claimed"));
+                }
+                reports.add(new Report(name, uuid, ip, reason, operator, server, status, reportId, claimed));
+            }
+            return reports;
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return reports;
+    }
+
+    public void deleteAllReports() {
+        String query = "DELETE FROM tsreports_reports";
+        core.executeUpdateAsync(query);
     }
 
     public List<Report> getReportsAsList(int page, int perPage) {
+        String query = String.format("SELECT * FROM tsreports_reports ORDER BY id DESC LIMIT %s OFFSET %s", perPage, (page - 1) * perPage);
         List<Report> reports = new ArrayList<>();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(SqlQuery.GET_REPORTS_AS_LIST.getQuery())) {
-            ps.setInt(1, perPage);
-            ps.setInt(2, (page - 1) * perPage);
-            ResultSet result = ps.executeQuery();
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
             while (result.next()) {
-                String playerName = result.getString("playerName");
-                UUID playerUuid = UUID.fromString(result.getString("playerUuid"));
-                String playerIp = result.getString("playerIp");
-                String targetName = result.getString("targetName");
-                UUID targetUuid = UUID.fromString(result.getString("targetUuid"));
-                String targetIp = result.getString("targetIp");
+                String name = result.getString("name");
+                UUID uuid = UUID.fromString(result.getString("uuid"));
+                String ip = result.getString("ip");
                 String reason = result.getString("reason");
-                String flag = result.getString("flag");
-                long time = result.getLong("time");
-                int id = result.getInt("id");
-                reports.add(new Report(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, time, id));
+                String operator = result.getString("operator");
+                String server = result.getString("server");
+                Status status = getStatus(result.getString("status"));
+                int reportId = result.getInt("id");
+                UUID claimed = null;
+                if (result.getString("claimed") != null) {
+                    claimed = UUID.fromString(result.getString("claimed"));
+                }
+                reports.add(new Report(name, uuid, ip, reason, operator, server, status, reportId, claimed));
             }
+            return reports;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return reports;
     }
 
-    public List<Report> getReportsAsListFromPlayer(String uuidOrName, int page, int perPage) {
-        String query = uuidOrName.length() == 36
-                ? SqlQuery.GET_REPORTS_AS_LIST_FROM_PLAYER_WITH_UUID.getQuery()
-                : SqlQuery.GET_REPORTS_AS_LIST_FROM_PLAYER_WITH_NAME.getQuery();
+    public List<Report> getReportsAsListFromPlayer(String operator, int page, int perPage) {
+        String query = String.format("SELECT * FROM tsreports_reports WHERE operator = '%s' ORDER BY id DESC LIMIT %s OFFSET %s", operator, perPage, (page - 1) * perPage);
         List<Report> reports = new ArrayList<>();
-        try (Connection connection = source.getConnection(); PreparedStatement ps = connection.prepareStatement(query)) {
-            ps.setString(1, uuidOrName);
-            ps.setInt(2, perPage);
-            ps.setInt(3, (page - 1) * perPage);
-            ResultSet result = ps.executeQuery();
+        try (Connection connection = core.getDataSource().getConnection()) {
+            ResultSet result = connection.createStatement().executeQuery(query);
             while (result.next()) {
-                String playerName = result.getString("playerName");
-                UUID playerUuid = UUID.fromString(result.getString("playerUuid"));
-                String playerIp = result.getString("playerIp");
-                String targetName = result.getString("targetName");
-                UUID targetUuid = UUID.fromString(result.getString("targetUuid"));
-                String targetIp = result.getString("targetIp");
+                String name = result.getString("name");
+                UUID uuid = UUID.fromString(result.getString("uuid"));
+                String ip = result.getString("ip");
                 String reason = result.getString("reason");
-                String flag = result.getString("flag");
-                long time = result.getLong("time");
-                int id = result.getInt("id");
-                reports.add(new Report(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, time, id));
+                String server = result.getString("server");
+                Status status = getStatus(result.getString("status"));
+                int reportId = result.getInt("id");
+                UUID claimed = null;
+                if (result.getString("claimed") != null) {
+                    claimed = UUID.fromString(result.getString("claimed"));
+                }
+                reports.add(new Report(name, uuid, ip, reason, operator, server, status, reportId, claimed));
             }
+            return reports;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return reports;
+    }
+
+    public Status getStatus(String statusName) {
+        Status status;
+        switch (statusName) {
+            default:
+            case ("New"):
+                status = Status.NEW;
+                break;
+            case ("WIP"):
+                status = Status.WIP;
+                break;
+            case ("Complete"):
+                status = Status.COMPLETE;
+                break;
+        }
+        return status;
     }
 
 }

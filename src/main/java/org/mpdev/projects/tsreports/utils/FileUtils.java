@@ -6,14 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.nio.file.*;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -29,7 +23,7 @@ public class FileUtils {
             files = Files.walk(fileSystem.getPath(packagePath)).
                     filter(Objects::nonNull).
                     filter(filter).
-                    map(p -> new File(p.toString().substring(1))).
+                    map(p -> new File(p.toString())).
                     collect(Collectors.toSet());
             fileSystem.close();
         } catch (URISyntaxException | IOException ex) {

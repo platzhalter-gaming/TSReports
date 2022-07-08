@@ -6,7 +6,6 @@ import org.mpdev.projects.tsreports.managers.ConfigManager;
 import java.util.Locale;
 
 public class PlayerLocale {
-
     private final ConfigManager configManager = TSReports.getInstance().getConfigManager();
     private final String playerName;
 
@@ -17,4 +16,5 @@ public class PlayerLocale {
     public Locale getLocale() {
         return !"CONSOLE".equals(playerName) ? TSReports.getInstance().getOfflinePlayers().get(playerName).getLocale() : configManager.getDefaultLocale();
     }
+
 }

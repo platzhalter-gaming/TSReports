@@ -4,29 +4,29 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 import org.mpdev.projects.tsreports.TSReports;
-import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.inventory.InventoryDrawer;
 import org.mpdev.projects.tsreports.inventory.inventories.LangSelector;
-import org.mpdev.projects.tsreports.inventory.inventories.Reporting;
+import org.mpdev.projects.tsreports.inventory.inventories.ReportPanel;
+import org.mpdev.projects.tsreports.inventory.inventories.StatusPanel;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
-import org.mpdev.projects.tsreports.objects.Report;
+import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ReportCommand extends Command {
 
     private final TSReports plugin;
-    private final int listPageLimit;
     private final int cooldown;
     private final Map<UUID, Integer> cd = new HashMap<>();
 
     public ReportCommand(TSReports plugin, String command, String permission, String... aliases) {
         super(command, permission, aliases);
         this.plugin = plugin;
-        this.listPageLimit = plugin.getConfigManager().getConfig().getInt("listPageLimit");
-        this.cooldown = plugin.getConfigManager().getConfig().getInt("reportCooldown");
+        this.cooldown = plugin.getConfig().getInt("reportCooldown", 60);
 
         plugin.getProxy().getScheduler().schedule(plugin, () -> {
             if (cd.isEmpty())return;
@@ -49,85 +49,77 @@ public class ReportCommand extends Command {
             Utils.sendText(sender, "onlyPlayer");
             return;
         }
+
         ProxiedPlayer player = (ProxiedPlayer) sender;
 
-        if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("setlang")) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("language")) {
 
-            if ((!sender.hasPermission("tsreports.setlang") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
+            if (!TSReports.getInstance().getConfig().getBoolean("gui.languageselector")) {
+                Utils.sendText(sender, "commandDisabled");
                 return;
             }
 
-            if (TSReports.getInstance().isProtocolize()) {
-
-                InventoryDrawer.open(new LangSelector(null, player));
-                return;
-
-            }
-
-            Locale oldLocale = plugin.getOfflinePlayers().get(player.getName()).getLocale();
-            Locale newLocale;
-            try {
-                newLocale = Utils.stringToLocale(args[1]);
-            } catch (Exception e) {
-                Utils.sendText(player, "languageNotFound");
+            if (!plugin.getCommands().get("language")) {
+                Utils.sendText(sender, "commandDisabled");
                 return;
             }
 
-            if (!plugin.getConfigManager().getAvailableLocales().contains(newLocale)) {
-                Utils.sendText(player, "languageNotFound");
+            if (!Utils.hasPermission(player, "tsreports.language") || !Utils.hasPermission(player, "tsreports.admin")) {
+                Utils.sendText(player, "noPermission");
                 return;
             }
 
-            plugin.getOfflinePlayers().get(player.getName()).setLocale(newLocale);
-            plugin.getStorageManager().updateLanguage(player.getUniqueId(), newLocale);
+            InventoryDrawer.open(new LangSelector(null, player));
 
-            Utils.sendText(player, "commands.interlanguage", message -> message.replace("%oldLanguage%", oldLocale.toString()).replace("%newLanguage%", newLocale.toString()));
+        } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("status")) {
 
-        } else if ((args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("status")) {
-
-            if ((!sender.hasPermission("tsreports.status") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
+            if (!TSReports.getInstance().getConfig().getBoolean("gui.statuspanel")) {
+                Utils.sendText(sender, "commandDisabled");
                 return;
             }
 
-            if (args[1].equalsIgnoreCase("list")) {
-
-                int page;
-                try {
-                    page = Integer.max(Integer.parseInt(args[2]), 1);
-                } catch (Exception e) {
-                    page = 1;
-                }
-                playerStatusList(player, page);
+            if (!plugin.getCommands().get("status-player")) {
+                Utils.sendText(sender, "commandDisabled");
                 return;
+            }
 
+            if (!Utils.hasPermission(player, "tsreports.statuspanel") || !Utils.hasPermission(player, "tsreports.admin")) {
+                Utils.sendText(player, "noPermission");
+                return;
+            }
+
+            if (args.length == 1) {
+                InventoryDrawer.open(new StatusPanel(null, player, 1));
+                return;
             }
 
             if (!Utils.isInteger(args[1])) {
-                Utils.sendText(player, "onlyNumbersAllowed");
+                Utils.sendText(player, "mustBeNumber");
                 return;
             }
 
-            if (args[1].length() >= 10) {
-                Utils.sendText(player, "numberTooHigh");
-                return;
-            }
-
-            int id = Integer.parseInt(args[1]);
-            Report report = plugin.getStorageManager().getReport(id);
-
-            if (report == null) {
-                Utils.sendText(player, "reportNotFound");
-                return;
-            }
-
-            Utils.sendText(player, "commands.status", message -> Utils.replaceReportPlaceholders(message, report));
+            int page = Integer.parseInt(args[1]);
+            InventoryDrawer.open(new StatusPanel(null, player, page));
 
         } else if (args.length >= 1) {
 
-            if ((!sender.hasPermission("tsreports.use") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
+            if (!plugin.getCommands().get("report")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(player, "tsreports.use") || !Utils.hasPermission(player, "tsreports.admin")) {
+                Utils.sendText(player, "noPermission");
+                return;
+            }
+
+            if (cd.containsKey(player.getUniqueId())) {
+                Utils.sendText(player, "reportCooldown", message -> message.replace("%time%", String.valueOf(cd.get(player.getUniqueId()))));
+                return;
+            }
+
+            if (plugin.getConfigManager().getBannedPlayers().contains(player.getName()) || plugin.getConfigManager().getBannedPlayers().contains(player.getUniqueId().toString())) {
+                Utils.sendText(sender, "blacklisted");
                 return;
             }
 
@@ -138,49 +130,19 @@ public class ReportCommand extends Command {
                 return;
             }
 
-            StringBuilder reason = new StringBuilder();
-            for (String arg : args) {
-                if (arg.equalsIgnoreCase(args[0]))continue;
-                reason.append(" ").append(arg);
-            }
-
             if (Utils.isOnline(uuidOrName)) {
 
                 ProxiedPlayer target = uuidOrName.length() == 36
                         ? plugin.getProxy().getPlayer(UUID.fromString(uuidOrName))
                         : plugin.getProxy().getPlayer(uuidOrName);
 
-                if (TSReports.getInstance().isProtocolize()) {
-
-                    InventoryDrawer.open(new Reporting(player, target));
-                    return;
-
-                }
-
-                if (args.length == 1) {
-                    Utils.sendText(player, "usages.default");
-                    return;
-                }
-
-                callReportEvent(player, target, reason.toString());
+                InventoryDrawer.open(new ReportPanel(null, player, target));
 
             } else if (Utils.isOffline(uuidOrName)) {
 
-                OfflinePlayer target = plugin.getOfflinePlayers().get(uuidOrName);
+                OfflinePlayer target = TSReports.getInstance().getOfflinePlayers().get(uuidOrName);
 
-                if (TSReports.getInstance().isProtocolize()) {
-
-                    InventoryDrawer.open(new Reporting(player, target));
-                    return;
-
-                }
-
-                if (args.length == 1) {
-                    Utils.sendText(player, "usages.default");
-                    return;
-                }
-
-                callReportEvent(player, target, reason.toString());
+                InventoryDrawer.open(new ReportPanel(null, player, target));
 
             } else {
 
@@ -190,38 +152,13 @@ public class ReportCommand extends Command {
             }
 
             cd.put(player.getUniqueId(), cooldown);
+
         } else {
 
-            Utils.sendText(player, "usages.default");
+            PluginHelp.reportHelp(player);
 
         }
+
     }
-
-    public void playerStatusList(ProxiedPlayer player, int page) {
-        List<Report> reports = plugin.getStorageManager().getReportsAsListFromPlayer(player.getUniqueId().toString(), page, listPageLimit);
-
-        if (reports.isEmpty()) {
-            Utils.sendText(player, "commands.listEmpty");
-            return;
-        }
-
-        Utils.sendText(player, "commands.listAbove", message -> message.replace("%page%", String.valueOf(page)));
-
-        for (Report report : reports) {
-            Utils.sendText(player, "commands.listBase", message -> Utils.replaceReportPlaceholders(message, report));
-        }
-
-        Utils.sendText(player, "commands.listBelow", message -> message.replace("%page%", String.valueOf(page)));
-    }
-
-    public static void callReportEvent(ProxiedPlayer player, ProxiedPlayer target, String reason) {
-        TSReports.getInstance().getProxy().getPluginManager().callEvent(new ReportEvent(new Report(player.getName(), player.getUniqueId(), Utils.getPlayerIp(player.getName()), target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getName()), reason, "flag", TSReports.getInstance().getStorageManager().getReportsCount() + 1)));
-    }
-
-    public static void callReportEvent(ProxiedPlayer player, OfflinePlayer target, String reason) {
-        TSReports.getInstance().getProxy().getPluginManager().callEvent(new ReportEvent(new Report(player.getName(), player.getUniqueId(), Utils.getPlayerIp(player.getName()), target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getName()), reason, "flag", TSReports.getInstance().getStorageManager().getReportsCount() + 1)));
-    }
-
-
 
 }

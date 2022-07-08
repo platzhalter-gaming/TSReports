@@ -1,75 +1,86 @@
 package org.mpdev.projects.tsreports.objects;
 
-import java.sql.Timestamp;
 import java.util.UUID;
 
 public class Report {
 
-    private final int id;
-    private final String playerName, playerIp, targetName, targetIp, reason;
-    private String flag;
-    private final UUID playerUuid, targetUuid;
-    private final long time;
+    private final int reportId;
+    private String playerName, address, operator;
+    private final String reason, server;
+    private final UUID uuid;
+    private UUID claimed;
+    private Status status;
 
-    public Report(String playerName, UUID playerUuid, String playerIp, String targetName, UUID targetUuid, String targetIp, String reason, String flag, int id) {
-        this(playerName, playerUuid, playerIp, targetName, targetUuid, targetIp, reason, flag, new Timestamp(System.currentTimeMillis()).getTime(), id);
+    public Report(String playerName, UUID uuid, String address, String reason, String operator, String server, Status status, int reportId) {
+        this(playerName, uuid, address, reason, operator, server, status, reportId, null);
     }
 
-    public Report(String playerName, UUID playerUuid, String playerIp, String targetName, UUID targetUuid, String targetIp, String reason, String flag, long time, int id) {
+    public Report(String playerName, UUID uuid, String address, String reason, String operator, String server, Status status, int reportId, UUID claimed) {
         this.playerName = playerName;
-        this.playerUuid = playerUuid;
-        this.playerIp = playerIp;
-        this.targetName = targetName;
-        this.targetUuid = targetUuid;
-        this.targetIp = targetIp;
+        this.uuid = uuid;
+        this.address = address;
         this.reason = reason;
-        this.flag = flag;
-        this.time = time;
-        this.id = id;
+        this.operator = operator;
+        this.server = server;
+        this.status = status;
+        this.reportId = reportId;
+        this.claimed = claimed;
     }
 
-    public int getId() {
-        return id;
+    public UUID getClaimed() {
+        return claimed;
     }
 
-    public long getTime() {
-        return time;
+    public void setClaimed(UUID claimed) {
+        this.claimed = claimed;
     }
 
-    public String getFlag() {
-        return flag;
+    public String getAddress() {
+        return address;
     }
 
-    public String getPlayerIp() {
-        return playerIp;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getPlayerName() {
-        return playerName;
+    public String getServer() {
+        return server;
     }
 
     public String getReason() {
         return reason;
     }
 
-    public String getTargetIp() {
-        return targetIp;
+    public String getPlayerName() {
+        return playerName;
     }
 
-    public String getTargetName() {
-        return targetName;
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 
-    public UUID getPlayerUuid() {
-        return playerUuid;
+    public int getReportId() {
+        return reportId;
     }
 
-    public UUID getTargetUuid() {
-        return targetUuid;
+    public Status getStatus() {
+        return status;
     }
 
-    public void setFlag(String flag) {
-        this.flag = flag;
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
+    }
+
+    public UUID getUniqueId() {
+        return uuid;
     }
 
 }

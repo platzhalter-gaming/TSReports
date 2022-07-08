@@ -1,21 +1,27 @@
 package org.mpdev.projects.tsreports;
 
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.mpdev.projects.tsreports.commands.AdminCommand;
 import org.mpdev.projects.tsreports.commands.ReportCommand;
+import org.mpdev.projects.tsreports.dependency.Dependency;
+import org.mpdev.projects.tsreports.dependency.DependencyManager;
 import org.mpdev.projects.tsreports.inventory.InventoryController;
 import org.mpdev.projects.tsreports.listeners.ConnectionListener;
 import org.mpdev.projects.tsreports.listeners.ReportListener;
 import org.mpdev.projects.tsreports.managers.ConfigManager;
 import org.mpdev.projects.tsreports.managers.StorageManager;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
+import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.UpdateChecker;
 import org.mpdev.projects.tsreports.utils.Utils;
 
 import java.io.InputStream;
-import java.util.List;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.logging.Level;
 
 public final class TSReports extends Plugin {
 
@@ -23,13 +29,12 @@ public final class TSReports extends Plugin {
 
     private ConfigManager configManager;
     private StorageManager storageManager;
+    private DependencyManager dependencyManager;
     private InventoryController inventoryController;
+    private LuckPerms api;
 
     private Map<String, OfflinePlayer> offlinePlayers;
-    private List<String> blacklisted;
-
-    private boolean protocolize;
-    private String[] adminCommandAliases;
+    private Map<String, Boolean> commands;
 
     public static TSReports getInstance() {
         return instance;
@@ -39,34 +44,40 @@ public final class TSReports extends Plugin {
     public void onEnable() {
         instance = this;
         this.configManager = new ConfigManager(this);
-        this.storageManager = new StorageManager(this);
-        this.offlinePlayers = storageManager.getAllPlayers();
-        this.blacklisted = getConfig().getStringList("blacklisted");
-        this.protocolize = getConfig().getBoolean("protocolize") && Utils.isPluginEnabled("Protocolize");
-
-        if (protocolize) {
-            getLogger().info("Protocolize has been found. Hooking in..");
-        } else {
-            getLogger().warning("# You can ignore this warning #");
-            getLogger().warning("Protocolize hasn't been found. Either its disabled in config or not installed!");
-            getLogger().warning("# You can ignore this warning #");
+        this.dependencyManager = new DependencyManager();
+        Path pluginsFolder = getProxy().getPluginsFolder().toPath();
+        if (getConfig().getBoolean("protocolize")) {
+            dependencyManager.downloadDependency(Dependency.PROTOCOLIZE_BUNGEECORD, pluginsFolder.resolve(Dependency.PROTOCOLIZE_BUNGEECORD.getFileName()));
         }
+        this.storageManager = new StorageManager();
+        this.offlinePlayers = storageManager.getAllOfflinePlayers();
 
         Utils.setupMetrics();
         new UpdateChecker(this).start();
 
         getProxy().getPluginManager().registerListener(this, new ConnectionListener(this));
         getProxy().getPluginManager().registerListener(this, new ReportListener(this));
-        String[] reportCommandAliases = (getConfig().getStringList("reportCommandAliases")).toArray(new String[0]);
-        getProxy().getPluginManager().registerCommand(this, new ReportCommand(this, reportCommandAliases[0], null, reportCommandAliases));
-        this.adminCommandAliases = (getConfig().getStringList("adminCommandAliases")).toArray(new String[0]);
-        getProxy().getPluginManager().registerCommand(this, new AdminCommand(this, adminCommandAliases[0], null, adminCommandAliases));
+        getProxy().getPluginManager().registerCommand(this, new ReportCommand(this, "report", null, "rep", "blame"));
+        getProxy().getPluginManager().registerCommand(this, new AdminCommand(this, "reports", null, "reps"));
 
+        this.commands = PluginHelp.setupCommands();
         this.inventoryController = new InventoryController();
+
+        if (Utils.isPluginEnabled("LuckPerms")) {
+            try {
+                api = LuckPermsProvider.get();
+            } catch (IllegalStateException e) {
+                getLogger().log(Level.SEVERE, "There has been a problem with LuckPerms: " + e.getMessage(), e);
+            }
+        }
     }
 
-    public String[] getAdminCommandAliases() {
-        return adminCommandAliases;
+    public LuckPerms getApi() {
+        return api;
+    }
+
+    public Map<String, Boolean> getCommands() {
+        return commands;
     }
 
     public InventoryController getInventoryController() {
@@ -77,12 +88,16 @@ public final class TSReports extends Plugin {
         return offlinePlayers;
     }
 
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+
+    public DependencyManager getDependencyManager() {
+        return dependencyManager;
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 
     public InputStream getResourceStream(String path) {
@@ -98,11 +113,4 @@ public final class TSReports extends Plugin {
         getLogger().info(message);
     }
 
-    public boolean isProtocolize() {
-        return protocolize;
-    }
-
-    public List<String> getBlacklisted() {
-        return blacklisted;
-    }
 }

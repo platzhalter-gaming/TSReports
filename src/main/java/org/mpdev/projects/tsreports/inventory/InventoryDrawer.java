@@ -1,8 +1,12 @@
 package org.mpdev.projects.tsreports.inventory;
 
+import dev.simplix.protocolize.api.Location;
 import dev.simplix.protocolize.api.Protocolize;
+import dev.simplix.protocolize.api.SoundCategory;
 import dev.simplix.protocolize.api.inventory.Inventory;
+import dev.simplix.protocolize.data.Sound;
 import dev.simplix.protocolize.data.inventory.InventoryType;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.mpdev.projects.tsreports.TSReports;
 
 import java.util.Set;
@@ -36,6 +40,24 @@ public class InventoryDrawer {
                 OPENING.remove(uuid);
             });
         });
+    }
+
+    public static void close(UIFrame frame) {
+        if (frame == null) {
+            return;
+        }
+        UUID uuid = frame.getViewer().getUniqueId();
+
+        OPENING.remove(uuid);
+        plugin.getProxy().getScheduler().runAsync(plugin, () -> {
+            Protocolize.playerProvider().player(frame.getViewer().getUniqueId()).closeInventory();
+        });
+    }
+
+    public static void playSound(ProxiedPlayer player, Sound sound, SoundCategory category) {
+        Location location = Protocolize.playerProvider().player(player.getUniqueId()).location();
+        Protocolize.playerProvider().player(player.getUniqueId())
+                .playSound(location, sound, category, 1, 1);
     }
 
     private static Inventory prepareInventory(UIFrame frame) {
@@ -73,5 +95,4 @@ public class InventoryDrawer {
             inventory.item(c.getSlot(), c.getItem());
         }
     }
-
 }

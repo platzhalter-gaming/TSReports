@@ -14,7 +14,9 @@ public enum Messages {
     GUI_MAIN_MANAGEREPORTS_NAME("gui.main.managereports.name"),
     GUI_ADMINPANEL_TITLE("gui.adminpanel.title"),
     GUI_ADMINPANEL_RELOAD_NAME("gui.adminpanel.reload.name"),
-    GUI_ADMINPANEL_DEFAULTLANGUAGESELECTOR_NAME("gui.adminpanel.defaultlanguageselector.name"),
+    GUI_ADMINPANEL_CLEAR_DATABASE_NAME("gui.adminpanel.cleardatabase.name"),
+    GUI_ADMINPANEL_STATUS_LORE("gui.adminpanel.status.lore"),
+    GUI_ADMINPANEL_STATUS_NAME("gui.adminpanel.status.name"),
     GUI_MANAGEREPORTS_TITLE("gui.managereports.title"),
     GUI_MANAGEREPORTS_REPORT_NAME("gui.managereports.report.name"),
     GUI_MANAGEREPORTS_REPORT_LORE("gui.managereports.report.lore"),
@@ -24,16 +26,30 @@ public enum Messages {
     GUI_CONFIRMATION_TITLE("gui.confirmation.title"),
     GUI_CONFIRMATION_CONFIRM_NAME("gui.confirmation.confirm.name"),
     GUI_CONFIRMATION_RETURN_NAME("gui.confirmation.return.name"),
-    GUI_REPORTING_TITLE("gui.reporting.title"),
-    GUI_REPORTING_REASON_HACKING("gui.reporting.reason.hacking"),
-    GUI_REPORTING_REASON_FLYING("gui.reporting.reason.flying"),
-    GUI_REPORTING_REASON_XRAY("gui.reporting.reason.xray"),
-    GUI_REPORTING_REASON_GRIEFING("gui.reporting.reason.griefing"),
-    GUI_REPORTING_REASON_NAME("gui.reporting.reason.name"),
-    GUI_REPORTING_REASON_SKIN("gui.reporting.reason.skin"),
-    GUI_REPORTING_REASON_OTHER("gui.reporting.reason.other");
+    GUI_REPORTPANEL_TITLE("gui.reportpanel.title"),
+    GUI_REPORTPANEL_REASONS_HACKING("gui.reportpanel.reasons.hacking"),
+    GUI_REPORTPANEL_REASONS_FLYING("gui.reportpanel.reasons.flying"),
+    GUI_REPORTPANEL_REASONS_XRAY("gui.reportpanel.reasons.xray"),
+    GUI_REPORTPANEL_REASONS_GRIEFING("gui.reportpanel.reasons.griefing"),
+    GUI_REPORTPANEL_REASONS_NAME("gui.reportpanel.reasons.name"),
+    GUI_REPORTPANEL_REASONS_SKIN("gui.reportpanel.reasons.skin"),
+    GUI_REPORTPANEL_REASONS_OTHER("gui.reportpanel.reasons.other"),
+    GUI_SPECIFICREPORT_TITLE("gui.specificreport.title"),
+    GUI_SPECIFICREPORT_DELETE_NAME("gui.specificreport.delete.name"),
+    GUI_SPECIFICREPORT_DELETE_LORE("gui.specificreport.delete.lore"),
+    GUI_SPECIFICREPORT_INFO_NAME("gui.specificreport.info.name"),
+    GUI_SPECIFICREPORT_INFO_LORE("gui.specificreport.info.lore"),
+    GUI_SPECIFICREPORT_CLAIM_NAME("gui.specificreport.claim.name"),
+    GUI_SPECIFICREPORT_CLAIM_LORE("gui.specificreport.claim.lore"),
+    GUI_SPECIFICREPORT_COMPLETE_LORE("gui.specificreport.complete.lore"),
+    GUI_SPECIFICREPORT_COMPLETE_NAME("gui.specificreport.complete.name"),
+    GUI_STATUSPANEL_TITLE("gui.statuspanel.title"),
+    GUI_STATUSPANEL_REPORT_NAME("gui.statuspanel.report.name"),
+    GUI_STATUSPANEL_REPORT_LORE("gui.statuspanel.report.lore"),
+    GUI_STATUSPANEL_REPORTSEMPTY("gui.statuspanel.reportsEmpty");
 
     private final String path;
+
     Messages(String path) {
         this.path = path;
     }
@@ -45,7 +61,7 @@ public enum Messages {
 
     public String getString() {
         ConfigManager configManager = TSReports.getInstance().getConfigManager();
-        return configManager.getMessage(path, true);
+        return configManager.getMessage(path);
     }
 
     public List<String> getStringList(String player) {
@@ -56,4 +72,5 @@ public enum Messages {
     public String getPath(){
         return path;
     }
+
 }

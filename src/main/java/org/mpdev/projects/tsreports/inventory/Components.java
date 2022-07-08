@@ -8,6 +8,13 @@ import org.mpdev.projects.tsreports.utils.Paginator;
 
 public class Components {
 
+    public static UIComponent getBarrierComponent(int slot, ProxiedPlayer viewer) {
+        return new UIComponentImpl.Builder(ItemType.GRAY_STAINED_GLASS_PANE)
+                .name(Messages.GUI_BARRIER_NAME.getString(viewer.getName()))
+                .slot(slot)
+                .build();
+    }
+
     public static UIComponent getBackComponent(UIFrame parent, int slot, ProxiedPlayer viewer) {
         UIComponent back = new UIComponentImpl.Builder(ItemType.ARROW)
                 .name(Messages.GUI_BACKBUTTON_NAME.getString(viewer.getName()))
@@ -34,13 +41,6 @@ public class Components {
                 .build();
         setOneTimeUseListener(c, listener);
         return c;
-    }
-
-    public static UIComponent getBarrierComponent(int slot, ProxiedPlayer viewer) {
-        return new UIComponentImpl.Builder(ItemType.GRAY_STAINED_GLASS_PANE)
-                .name(Messages.GUI_BARRIER_NAME.getString(viewer.getName()))
-                .slot(slot)
-                .build();
     }
 
     public static UIComponent getNextPageComponent(int slot, Runnable listener, Paginator paginator, ProxiedPlayer viewer) {

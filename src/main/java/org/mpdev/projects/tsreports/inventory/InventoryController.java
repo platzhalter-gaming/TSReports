@@ -53,7 +53,9 @@ public class InventoryController {
 
         String permission = component.getPermission(clickType);
         if (permission != null) {
-            if (!hasPermission(TSReports.getInstance().getProxy().getPlayer(player.uniqueId()), permission)) {
+            ProxiedPlayer sender = TSReports.getInstance().getProxy().getPlayer(player.uniqueId());
+            if (!Utils.hasPermission(sender, permission)) {
+                Utils.sendText(sender, "noPermission");
                 return;
             }
         }
@@ -70,10 +72,6 @@ public class InventoryController {
             click.clickedItem().lore(Collections.singletonList(Utils.color("&7Loading...")), true);
             finalListener.run();
         });
-    }
-
-    private boolean hasPermission(ProxiedPlayer player, String permission) {
-        return player.hasPermission(permission);
     }
 
     public static void register(UIFrame frame) {
@@ -101,5 +99,4 @@ public class InventoryController {
             }
         });
     }
-
 }

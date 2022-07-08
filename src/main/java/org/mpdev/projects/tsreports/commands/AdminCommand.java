@@ -6,213 +6,194 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ServerConnectEvent;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.config.ConfigurationProvider;
-import net.md_5.bungee.config.YamlConfiguration;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.inventory.InventoryDrawer;
 import org.mpdev.projects.tsreports.inventory.inventories.MainFrame;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
+import org.mpdev.projects.tsreports.objects.Status;
+import org.mpdev.projects.tsreports.objects.Node;
+import org.mpdev.projects.tsreports.utils.Luck;
+import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 public class AdminCommand extends Command {
 
     private final TSReports plugin;
-    private final File configFile;
-
-    private final String[] adminCommandAliases;
     private final int listPageLimit;
 
     public AdminCommand(TSReports plugin, String command, String permission, String... aliases) {
         super(command, permission, aliases);
         this.plugin = plugin;
-        this.adminCommandAliases = (plugin.getConfigManager().getConfig().getStringList("adminCommandAliases")).toArray(new String[0]);
-        this.listPageLimit = plugin.getConfigManager().getConfig().getInt("listPageLimit");
-        this.configFile = plugin.getConfigManager().getConfigFile();
+        this.listPageLimit = plugin.getConfig().getInt("listPageLimit", 10);
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("notify")) {
+        if (args.length == 1 && args[0].equals("login")) {
+
+            if (!plugin.getCommands().get("login")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
 
             if (!(sender instanceof ProxiedPlayer)) {
                 Utils.sendText(sender, "onlyPlayer");
                 return;
             }
 
-            if ((!sender.hasPermission("tsreports.resetall") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
+            if (!Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.admin")) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
 
             OfflinePlayer player = plugin.getOfflinePlayers().get(sender.getName());
 
-            if (player.isNotify()) {
-
-                player.setNotify(false);
-                Utils.sendText(sender, "commands.notify", message -> message.replace("%mode%", "&cdisabled&7"));
-                return;
-
-            }
-
-            player.setNotify(true);
-            Utils.sendText(sender, "commands.notify", message -> message.replace("%mode%", "&aenabled&7"));
-
-        } else if (args.length == 1 && args[0].equalsIgnoreCase("resetall")) {
-
-            if ((!sender.hasPermission("tsreports.resetall") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
+            if (player.isLoggedIn()) {
+                Utils.sendText(sender, "alreadyLoggedIn");
                 return;
             }
 
-            long start = System.currentTimeMillis();
-            plugin.getStorageManager().resetReports();
-            long finished = (System.currentTimeMillis() - start);
+            player.setLoggedIn(true);
+            plugin.getStorageManager().updateLoggedStatus(player.getUniqueId(), true);
+            Utils.sendText(sender, "command-messages.login", s -> s.replace("%loggedIn%", "&atrue&7"));
 
-            Utils.sendText(sender, "commands.resetAll", message -> message.replace("%time%", String.valueOf(finished)));
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("logout")) {
 
-        } else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-
-            if ((!sender.hasPermission("tsreports.reload") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
+            if (!plugin.getCommands().get("logout")) {
+                Utils.sendText(sender, "commandDisabled");
                 return;
             }
-
-            long start = System.currentTimeMillis();
-            try {
-                plugin.getConfigManager().setup();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            long finished = (System.currentTimeMillis() - start);
-
-            Utils.sendText(sender, "commands.reload", message -> message.replace("%time%", String.valueOf(finished)));
-
-        } else if (args.length == 1 && (args[0].equalsIgnoreCase("about") || args[0].equalsIgnoreCase("info"))) {
-
-            sendMessage(sender, "&a&m+                                                        +");
-            sendMessage(sender, String.format("&6&l%s", TSReports.getInstance().getDescription().getName()));
-            sendMessage(sender, "&eThe best report plugin for your server.");
-            sendMessage(sender, "&e");
-            sendMessage(sender, "&eDeveloper: &bTodesstoss");
-            sendMessage(sender, "&eVersion: &b" + TSReports.getInstance().getDescription().getVersion());
-            sendMessage(sender, "&eStorage Provider: &b" + TSReports.getInstance().getStorageManager().getStorageProvider());
-            sendMessage(sender, "&e");
-            sendMessage(sender, "&a&m+                                                        +");
-            sendMessage(sender, "&eUse &a/" + adminCommandAliases[0] + " help &efor help.");
-
-        } else if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
-
-            if ((!sender.hasPermission("tsreports.notify") || !sender.hasPermission("tsreports.resetall") || !sender.hasPermission("tsreports.reload") || !sender.hasPermission("tsreports.get") || !sender.hasPermission("tsreports.list")  || !sender.hasPermission("tsreports.delete") || !sender.hasPermission("tsreports.check") || !sender.hasPermission("tsreports.teleport") || !sender.hasPermission("tsreports.getuuid") || !sender.hasPermission("tsreports.blacklist") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            Utils.sendText(sender, "usages.admin");
-
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
-
-            if ((!sender.hasPermission("tsreports.get") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            if (!Utils.isInteger(args[1])) {
-                Utils.sendText(sender, "onlyNumbersAllowed");
-                return;
-            }
-
-            if (args[1].length() >= 10) {
-                Utils.sendText(sender, "numberTooHigh");
-                return;
-            }
-
-            int id = Integer.parseInt(args[1]);
-            Report report = plugin.getStorageManager().getReport(id);
-
-            if (report == null) {
-                Utils.sendText(sender, "reportNotFound");
-                return;
-            }
-
-            Utils.sendText(sender, "commands.get", message -> Utils.replaceReportPlaceholders(message, report));
-
-        } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("list")) {
-
-            if ((!sender.hasPermission("tsreports.list") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            int page;
-            try {
-                page = Integer.max(Integer.parseInt(args[1]), 1);
-            } catch (Exception e) {
-                page = 1;
-            }
-            listReports(sender, page);
-
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
-
-            if ((!sender.hasPermission("tsreports.delete") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            if (!Utils.isInteger(args[1])) {
-                Utils.sendText(sender, "onlyNumbersAllowed");
-                return;
-            }
-
-            if (args[1].length() >= 10) {
-                Utils.sendText(sender, "numberTooHigh");
-                return;
-            }
-
-            int id = Integer.parseInt(args[1]);
-            Report report = plugin.getStorageManager().getReport(id);
-
-            if (report == null) {
-                Utils.sendText(sender, "reportNotFound");
-                return;
-            }
-
-            plugin.getStorageManager().deleteReport(id);
-            Utils.sendText(sender, "commands.delete", message -> message.replace("%id%", String.valueOf(id)));
-
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("check")) {
-
-            if ((!sender.hasPermission("tsreports.check") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            String uuidOrName = args[1];
-            checkPlayer(sender, uuidOrName);
-
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("teleport")) {
 
             if (!(sender instanceof ProxiedPlayer)) {
                 Utils.sendText(sender, "onlyPlayer");
                 return;
             }
 
-            if ((!sender.hasPermission("tsreports.teleport") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
+            if (!Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            OfflinePlayer player = plugin.getOfflinePlayers().get(sender.getName());
+
+            if (!player.isLoggedIn()) {
+                Utils.sendText(sender, "notLoggedIn");
+                return;
+            }
+
+            player.setLoggedIn(false);
+            plugin.getStorageManager().updateLoggedStatus(player.getUniqueId(), false);
+            Utils.sendText(sender, "command-messages.logout", s -> s.replace("%loggedIn%", "&cfalse&7"));
+
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("gui")) {
+
+            if (!plugin.getCommands().get("gui")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!(sender instanceof ProxiedPlayer)) {
+                Utils.sendText(sender, "onlyPlayer");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            InventoryDrawer.open(new MainFrame((ProxiedPlayer) sender));
+
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("clear")) {
+
+            if (!plugin.getCommands().get("clear")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            long start = System.currentTimeMillis();
+            plugin.getStorageManager().deleteAllReports();
+            long finished = System.currentTimeMillis() - start;
+
+            Utils.sendText(sender, "command-messages.clear", s -> s.replace("%time%", String.valueOf(finished)));
+
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
+
+            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            PluginHelp.adminHelp(sender);
+
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("about")) {
+
+            if (!plugin.getCommands().get("about")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            sendMessage(sender, "&a&m+                                                        +");
+            sendMessage(sender, String.format("&6&l%s", plugin.getDescription().getName()));
+            sendMessage(sender, "&eThe best report plugin for your server.");
+            sendMessage(sender, "&e");
+            sendMessage(sender, "&eDeveloper: &bTodesstoss");
+            sendMessage(sender, "&eVersion: &b" + plugin.getDescription().getVersion());
+            sendMessage(sender, "&eStorage Provider: &b" + plugin.getStorageManager().getStorageProvider());
+            sendMessage(sender, "&e");
+            sendMessage(sender, "&a&m+                                                        +");
+            sendMessage(sender, "&eUse &a/reports help &efor help.");
+
+        } else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+
+            if (!plugin.getCommands().get("reload")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            long start = System.currentTimeMillis();
+            plugin.getConfigManager().setup();
+            long finished = System.currentTimeMillis() - start;
+
+            Utils.sendText(sender, "command-messages.reload", s -> s.replace("%time%", String.valueOf(finished)));
+
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("claim")) {
+
+            if (!plugin.getCommands().get("claim")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!(sender instanceof ProxiedPlayer)) {
+                Utils.sendText(sender, "onlyPlayer");
+                return;
+            }
+
+            ProxiedPlayer player = (ProxiedPlayer) sender;
+
+            if (!Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.admin")) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
 
             if (!Utils.isInteger(args[1])) {
-                Utils.sendText(sender, "onlyNumbersAllowed");
+                Utils.sendText(sender, "mustBeNumber");
                 return;
             }
 
@@ -221,7 +202,6 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            ProxiedPlayer player = (ProxiedPlayer) sender;
             int id = Integer.parseInt(args[1]);
             Report report = plugin.getStorageManager().getReport(id);
 
@@ -230,34 +210,208 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            ProxiedPlayer target = plugin.getProxy().getPlayer(report.getTargetUuid());
-
-            if (target == null) {
-                Utils.sendText(sender, "playerNotFound");
+            if (report.getClaimed() != null && (report.getClaimed().equals(player.getUniqueId()) || !report.getClaimed().equals(player.getUniqueId()))) {
+                Utils.sendText(sender, "alreadyClaimed");
                 return;
             }
 
-            player.connect(target.getServer().getInfo(), ServerConnectEvent.Reason.PLUGIN);
-            Utils.sendText(player, "commands.teleport", message -> message.replace("%target%", target.getName()));
+            report.setClaimed(player.getUniqueId());
+            report.setStatus(Status.WIP);
+            plugin.getStorageManager().updateClaimed(id, player.getUniqueId());
+            plugin.getStorageManager().updateStatus(id, Status.WIP);
 
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("getuuid")) {
+            Utils.sendText(sender, "command-messages.claim", s -> s.replace("%id%", "" + id));
 
-            if ((!sender.hasPermission("tsreports.getuuid") || !sender.hasPermission("tsreports.staff") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
+
+            if (!plugin.getCommands().get("get")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.admin")) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
 
-            String name = args[1];
+            if (!Utils.isInteger(args[1])) {
+                Utils.sendText(sender, "mustBeNumber");
+                return;
+            }
 
-            if (Utils.isOnline(name)) {
+            if (args[1].length() >= 10) {
+                Utils.sendText(sender, "numberTooHigh");
+                return;
+            }
 
-                ProxiedPlayer player = plugin.getProxy().getPlayer(name);
-                sendUuidMessage(player.getUniqueId(), player.getName(), sender);
+            int id = Integer.parseInt(args[1]);
+            Report report = plugin.getStorageManager().getReport(id);
 
-            } else if (Utils.isOffline(name)) {
+            if (report == null) {
+                Utils.sendText(sender, "reportNotFound");
+                return;
+            }
 
-                OfflinePlayer player = plugin.getOfflinePlayers().get(name);
-                sendUuidMessage(player.getUniqueId(), player.getName(), sender);
+            Utils.sendText(sender, "command-messages.get", s -> Utils.replaceReportPlaceholders(s, report));
+
+        } else if (args.length == 2 && (args[0].equalsIgnoreCase("delete") || args[0].equalsIgnoreCase("remove"))) {
+
+            if (!plugin.getCommands().get("delete")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            if (!Utils.isInteger(args[1])) {
+                Utils.sendText(sender, "mustBeNumber");
+                return;
+            }
+
+            if (args[1].length() >= 10) {
+                Utils.sendText(sender, "numberTooHigh");
+                return;
+            }
+
+            int id = Integer.parseInt(args[1]);
+            Report report = plugin.getStorageManager().getReport(id);
+
+            if (report == null) {
+                Utils.sendText(sender, "reportNotFound");
+                return;
+            }
+
+            if (report.getClaimed() != null && !sender.hasPermission("tsreports.admin")) {
+                if (!(sender instanceof ProxiedPlayer)) {
+                    Utils.sendText(sender, "cannotDeleteClaimedReport");
+                    return;
+                }
+                if (!report.getClaimed().equals(((ProxiedPlayer) sender).getUniqueId())) {
+                    Utils.sendText(sender, "cannotDeleteClaimedReport");
+                    return;
+                }
+            }
+
+            plugin.getStorageManager().deleteReport(id);
+            Utils.sendText(sender, "command-messages.delete", s -> s.replace("%id%", "" + id));
+
+        } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("list")) {
+
+            if (!plugin.getCommands().get("list")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            if (args.length == 1) {
+                listReports(sender, 1);
+                return;
+            }
+
+            if (!Utils.isInteger(args[1])) {
+                Utils.sendText(sender, "mustBeNumber");
+                return;
+            }
+
+            if (args[1].length() >= 10) {
+                Utils.sendText(sender, "numberTooHigh");
+                return;
+            }
+
+            int page = Integer.parseInt(args[1]);
+            listReports(sender, page);
+
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("status")) {
+
+            if (!plugin.getCommands().get("status-admin")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            if (!Utils.isInteger(args[1])) {
+                Utils.sendText(sender, "mustBeNumber");
+                return;
+            }
+
+            if (args[1].length() >= 10) {
+                Utils.sendText(sender, "numberTooHigh");
+                return;
+            }
+
+            int id = Integer.parseInt(args[1]);
+            Report report = plugin.getStorageManager().getReport(id);
+
+            if (report == null) {
+                Utils.sendText(sender, "reportNotFound");
+                return;
+            }
+
+            Status status = getStatus(args[2]);
+
+            if (status == null) {
+                Utils.sendText(sender, "statusNotFound");
+                return;
+            }
+
+            report.setStatus(status);
+            plugin.getStorageManager().updateStatus(id, status);
+
+            Utils.sendText(sender, "command-messages.status", s -> s.replace("%status%", status.getStatusName()).replace("%id%", "" + id));
+
+        } else if ((args.length == 1 || args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("addperm")) {
+
+            if (!plugin.getCommands().get("addperm")) {
+                Utils.sendText(sender, "commandDisabled");
+                return;
+            }
+
+            if (!Utils.isPluginEnabled("LuckPerms") || plugin.getApi() == null) {
+                Utils.sendText(sender, "luckPerms");
+                return;
+            }
+
+            if (!Utils.hasPermission(sender, "tsreports.addperm") || !Utils.hasPermission(sender, "tsreports.admin")) {
+                Utils.sendText(sender, "noPermission");
+                return;
+            }
+
+            if (args.length == 1 || args.length == 2) {
+                Utils.sendText(sender, "command-messages.permissionNodes");
+                return;
+            }
+
+            Node permissionNode = getPermissionNode(args[1]);
+
+            if (permissionNode == null) {
+                Utils.sendText(sender, "nodeNotFound");
+                return;
+            }
+
+            String uuidOrName = args[2];
+
+            if (Utils.isOnline(uuidOrName)) {
+
+                ProxiedPlayer target = uuidOrName.length() == 36
+                        ? plugin.getProxy().getPlayer(UUID.fromString(uuidOrName))
+                        : plugin.getProxy().getPlayer(uuidOrName);
+
+                Luck.addPermission(target.getUniqueId(), permissionNode);
+
+                Utils.sendText(sender, "command-messages.addperm", s -> s
+                        .replace("%player%", target.getName())
+                        .replace("%permission%", permissionNode.permission()));
 
             } else {
 
@@ -265,145 +419,115 @@ public class AdminCommand extends Command {
 
             }
 
-        } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("blacklist")) {
-
-            if ((!sender.hasPermission("tsreports.blacklist") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
-                Utils.sendText(sender, "noPermission");
-                return;
-            }
-
-            if (args.length == 1) {
-
-                if (plugin.getBlacklisted().isEmpty()) {
-                    Utils.sendText(sender, "commands.blacklistEmpty");
-                    return;
-                }
-
-                Utils.sendText(sender, "commands.blacklistAbove", message -> message.replace("{0}", String.valueOf(plugin.getBlacklisted().size())));
-
-                StringBuilder players = new StringBuilder();
-                for (String s : plugin.getBlacklisted()) {
-                    players.append(Utils.color(plugin.getConfigManager().getMessage("commands.blacklistBase", sender.getName())
-                            .replace("%player%", s)));
-                }
-                TextComponent component = new TextComponent(players.toString());
-                sender.sendMessage(component);
-
-                Utils.sendText(sender, "commands.blacklistBelow", message -> message.replace("{0}", String.valueOf(plugin.getBlacklisted().size())));
-                return;
-
-            }
-
-            String uuidOrName = args[1].toLowerCase(Locale.ROOT);
-
-            try {
-                if (plugin.getBlacklisted().contains(uuidOrName)) {
-
-                    plugin.getBlacklisted().remove(uuidOrName);
-                    plugin.getConfig().set("blacklisted", plugin.getBlacklisted().toArray());
-                    ConfigurationProvider.getProvider(YamlConfiguration.class).save(plugin.getConfig(), configFile);
-                    plugin.getConfigManager().setup();
-                    Utils.sendText(sender, "commands.blacklist", message -> message
-                            .replace("%target%", uuidOrName)
-                            .replace("%type%", "&cremoved&7"));
-                    return;
-
-                }
-
-                if (plugin.getStorageManager().getPlayer(uuidOrName) == null) {
-                    Utils.sendText(sender, "playerNotFound");
-                    return;
-                }
-
-                plugin.getBlacklisted().add(uuidOrName);
-                plugin.getConfig().set("blacklisted", plugin.getBlacklisted().toArray());
-                ConfigurationProvider.getProvider(YamlConfiguration.class).save(plugin.getConfig(), configFile);
-                plugin.getConfigManager().setup();
-                Utils.sendText(sender, "commands.blacklist", message -> message
-                        .replace("%target%", uuidOrName)
-                        .replace("%type%", "&aadded&7"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         } else {
 
-            if ((!sender.hasPermission("tsreports.notify") || !sender.hasPermission("tsreports.resetall") || !sender.hasPermission("tsreports.reload") || !sender.hasPermission("tsreports.get") || !sender.hasPermission("tsreports.list")  || !sender.hasPermission("tsreports.delete") || !sender.hasPermission("tsreports.check") || !sender.hasPermission("tsreports.teleport") || !sender.hasPermission("tsreports.getuuid") || !sender.hasPermission("tsreports.blacklist") || !sender.hasPermission("tsreports.admin")) && !sender.getName().equalsIgnoreCase("LaurinVL")) {
+            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
 
-            if (plugin.isProtocolize() && sender instanceof ProxiedPlayer) {
-
-                InventoryDrawer.open(new MainFrame((ProxiedPlayer) sender));
-                return;
-
-            }
-
-            Utils.sendText(sender, "usages.admin");
+            PluginHelp.adminHelp(sender);
 
         }
 
     }
 
     public void sendMessage(CommandSender sender, String message) {
-        TextComponent component = new TextComponent(Utils.color(message));
-        sender.sendMessage(component);
+        sender.sendMessage(new TextComponent(Utils.color(message)));
     }
 
-    @Deprecated
-    public void sendUuidMessage(UUID uuid, String target, CommandSender sender) {
-        TextComponent component = new TextComponent(Utils.color(plugin.getConfigManager().getMessage("commands.getuuid", sender.getName())).replace("%target%", target).replace("%uuid%", uuid.toString()));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Click to paste in chat").create()));
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, uuid.toString()));
-        sender.sendMessage(component);
+    public Status getStatus(String statusName) {
+        Status status = null;
+        switch (statusName.toLowerCase()) {
+            case ("new"):
+                status = Status.NEW;
+                break;
+            case ("wip"):
+                status = Status.WIP;
+                break;
+            case ("complete"):
+                status = Status.COMPLETE;
+                break;
+        }
+        return status;
     }
 
-    public void checkPlayer(CommandSender sender, String uuidOrName) {
-        List<Report> reports = plugin.getStorageManager().getReportsFromPlayer(uuidOrName);
-
-        if (reports.isEmpty()) {
-            Utils.sendText(sender, "playerNotFound");
-            return;
+    public Node getPermissionNode(String node) {
+        Node permissionNode = null;
+        switch (node.toLowerCase()) {
+            case ("gui"):
+                permissionNode = Node.GUI;
+                break;
+            case ("login"):
+                permissionNode = Node.LOGIN;
+                break;
+            case ("logout"):
+                permissionNode = Node.LOGOUT;
+                break;
+            case ("clear"):
+                permissionNode = Node.CLEAR;
+                break;
+            case ("reload"):
+                permissionNode = Node.RELOAD;
+                break;
+            case ("claim"):
+                permissionNode = Node.CLAIM;
+                break;
+            case ("get"):
+                permissionNode = Node.GET;
+                break;
+            case ("delete"):
+                permissionNode = Node.DELETE;
+                break;
+            case ("list"):
+                permissionNode = Node.LIST;
+                break;
+            case ("status"):
+                permissionNode = Node.STATUS;
+                break;
+            case ("report"):
+                permissionNode = Node.REPORT;
+                break;
+            case ("language"):
+                permissionNode = Node.LANGUAGE;
+                break;
+            case ("statuspanel"):
+                permissionNode = Node.STATUSPANEL;
+                break;
+            case ("admin"):
+                permissionNode = Node.ADMIN;
+                break;
+            case ("gui_admin"):
+                permissionNode = Node.GUI_ADMIN;
+                break;
+            case ("gui_managereports"):
+                permissionNode = Node.GUI_MANAGEREPORTS;
+                break;
+            case ("autologin"):
+                permissionNode = Node.AUTOLOGIN;
+                break;
         }
-
-        String suspicion;
-        if (reports.size() >= plugin.getConfig().getInt("reportsTillHigh")) {
-            suspicion = "&cHIGH_SUSPICION";
-        } else if (reports.size() >= plugin.getConfig().getInt("reportsTillMed")) {
-            suspicion = "&eMEDIUM_SUSPICION";
-        } else {
-            suspicion = "&aLOW_SUSPICION";
-        }
-
-        int latestReport = 1;
-        for (Report report : reports) {
-            if (report.getId() > latestReport) {
-                latestReport = report.getId();
-            }
-        }
-        Report report = plugin.getStorageManager().getReport(latestReport);
-
-        Utils.sendText(sender, "commands.check", message -> message.replace("%received%", String.valueOf(reports.size())
-                .replace("%suspicion%", suspicion).replace("%player%", report.getTargetName())
-                .replace("%reason%", report.getReason()).replace("%id%", String.valueOf(report.getId()))));
+        return permissionNode;
     }
 
     public void listReports(CommandSender sender, int page) {
         List<Report> reports = plugin.getStorageManager().getReportsAsList(page, listPageLimit);
 
         if (reports.isEmpty()) {
-            Utils.sendText(sender, "commands.listEmpty");
+            Utils.sendText(sender, "command-messages.listEmpty");
             return;
         }
 
-        Utils.sendText(sender, "commands.listAbove", message -> message.replace("%page%", String.valueOf(page)));
+        Utils.sendText(sender, "command-messages.listAbove", message -> message.replace("%page%", String.valueOf(page)));
 
-        for (Report report : reports) {
-            Utils.sendText(sender, "commands.listBase", message -> Utils.replaceReportPlaceholders(message, report));
-        }
+        reports.forEach(report -> {
+            TextComponent component = new TextComponent(Utils.getText(sender.getName(), "command-messages.listBase", s -> Utils.replaceReportPlaceholders(s, report)));
+            component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Click to get more information").create()));
+            component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports get " + report.getReportId()));
+            sender.sendMessage(component);
+        });
 
-        Utils.sendText(sender, "commands.listBelow", message -> message.replace("%page%", String.valueOf(page)));
+        Utils.sendText(sender, "command-messages.listBelow", message -> message.replace("%page%", String.valueOf(page)));
     }
 
 }

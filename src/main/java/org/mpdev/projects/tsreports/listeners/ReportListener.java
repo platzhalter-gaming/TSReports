@@ -10,7 +10,6 @@ import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.util.Locale;
 import java.util.Objects;
 
 public class ReportListener implements Listener {
@@ -24,36 +23,26 @@ public class ReportListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onReport(ReportEvent event) {
         Report report = event.getReport();
-        ProxiedPlayer operator = event.getOperator();
+        ProxiedPlayer operator = plugin.getProxy().getPlayer(report.getOperator());
 
-        // Check if the operator is blacklisted
-        if (plugin.getBlacklisted().contains(operator.getName().toLowerCase(Locale.ROOT)) || plugin.getBlacklisted().contains(operator.getUniqueId().toString().toLowerCase(Locale.ROOT))) {
-
-            Utils.sendText(operator, "blacklisted");
+        ProxiedPlayer target = plugin.getProxy().getPlayer(report.getUniqueId());
+        if (target != null && Utils.hasPermission(target, "tsreports.admin")) {
+            Utils.sendText(operator, "unableToReport");
             return;
-
         }
 
-        // Check if the target is reportable (if online)
-        if (Utils.isOnline(report.getTargetUuid().toString())) {
-
-            ProxiedPlayer target = TSReports.getInstance().getProxy().getPlayer(report.getTargetUuid());
-            if (target.hasPermission("tsreports.staff") || target.hasPermission("tsreports.admin")) {
-                Utils.sendText(operator, "cannotReportTarget", message -> message.replace("%target%", report.getTargetName()));
-            }
-
-        }
-
-        // Adding report to database
+        // Adding reports to database
         plugin.getStorageManager().addReportToReports(report);
         plugin.getStorageManager().addReportToHistory(report);
 
-        // Sending message to operator
-        Utils.sendText(operator, "commands.report", message -> Utils.replaceReportPlaceholders(message, report));
+        // Sending successfully reported message to operator
+        Utils.sendText(operator, "command-messages.report", message -> message
+                .replace("%player%", report.getPlayerName())
+                .replace("%reason%", report.getReason()));
 
-        // Contact staff members
-        plugin.getOfflinePlayers().values().stream().filter(OfflinePlayer::isNotify).map(player -> plugin.getProxy().getPlayer(player.getUniqueId())).filter(Objects::nonNull).forEach(player -> {
-            Utils.sendText(player, "staffNotify", message -> Utils.replaceReportPlaceholders(message, report));
-        });
+        // Contacting all staff members (loggedIn enabled only)
+        plugin.getOfflinePlayers().values().stream().filter(OfflinePlayer::isLoggedIn).map(player -> plugin.getProxy().getPlayer(player.getUniqueId())).filter(Objects::nonNull).forEach(player -> Utils.sendText(player, "staffNotify", s -> s.replace("%target%", report.getPlayerName()).replace("%reason%", report.getReason()).replace("%operator%", report.getOperator())));
+
     }
+
 }

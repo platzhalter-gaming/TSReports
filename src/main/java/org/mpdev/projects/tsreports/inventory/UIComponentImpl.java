@@ -62,4 +62,5 @@ public class UIComponentImpl extends UIComponent {
             return component;
         }
     }
+
 }
