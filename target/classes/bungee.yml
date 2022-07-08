@@ -1,5 +1,0 @@
-name: TSReports
-version: '2.9'
-main: org.mpdev.projects.tsreports.TSReports
-description: Advanced technology to handle many reports at once
-softdepends: [ Protocolize ]
