@@ -33,6 +33,8 @@ public final class TSReports extends Plugin {
     private InventoryController inventoryController;
     private LuckPerms api;
 
+    private String[] adminCommands;
+
     private Map<String, OfflinePlayer> offlinePlayers;
     private Map<String, Boolean> commands;
 
@@ -55,10 +57,13 @@ public final class TSReports extends Plugin {
         Utils.setupMetrics();
         new UpdateChecker(this).start();
 
+        this.adminCommands = getConfig().getStringList("adminCommands").toArray(new String[0]);
+        String[] reportCommands = getConfig().getStringList("reportCommands").toArray(new String[0]);
+
         getProxy().getPluginManager().registerListener(this, new ConnectionListener(this));
         getProxy().getPluginManager().registerListener(this, new ReportListener(this));
-        getProxy().getPluginManager().registerCommand(this, new ReportCommand(this, "report", null, "rep", "blame"));
-        getProxy().getPluginManager().registerCommand(this, new AdminCommand(this, "reports", null, "reps"));
+        getProxy().getPluginManager().registerCommand(this, new ReportCommand(this, reportCommands[0], null, reportCommands));
+        getProxy().getPluginManager().registerCommand(this, new AdminCommand(this, adminCommands[0], null, adminCommands));
 
         this.commands = PluginHelp.setupCommands();
         this.inventoryController = new InventoryController();
@@ -70,6 +75,10 @@ public final class TSReports extends Plugin {
                 getLogger().log(Level.SEVERE, "There has been a problem with LuckPerms: " + e.getMessage(), e);
             }
         }
+    }
+
+    public String[] getAdminCommands() {
+        return adminCommands;
     }
 
     public LuckPerms getApi() {

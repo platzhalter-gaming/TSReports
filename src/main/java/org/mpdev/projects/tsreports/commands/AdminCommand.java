@@ -523,7 +523,7 @@ public class AdminCommand extends Command {
         reports.forEach(report -> {
             TextComponent component = new TextComponent(Utils.getText(sender.getName(), "command-messages.listBase", s -> Utils.replaceReportPlaceholders(s, report)));
             component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Click to get more information").create()));
-            component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/reports get " + report.getReportId()));
+            component.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + plugin.getAdminCommands()[0] + " get " + report.getReportId()));
             sender.sendMessage(component);
         });
 

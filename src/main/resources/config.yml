@@ -27,11 +27,22 @@ protocolize: true
 
 #⮟ GENERAL ⮟
 
+#⮟ determines how the admin command can be executed
+adminCommands:
+  - reports # ← Example: /reports delete <id>
+  - reps # ← Example: /reps delete <id>
+
+#⮟ determines how the report command can be executed
+reportCommands:
+  - report # ← Example: /report language
+  - rep # ← Example: /rep language
+  - blame # ← Example: /blame language
+
 #⮟ enable / disable different inventories
 gui:
   languageselector: true
   adminpanel: true
-  managereports: true #<- also contains specificreport inventory
+  managereports: true # ← also contains specificreport inventory
   statuspanel: true
 
 #⮟ determines how many reports are on a page when using the list command
