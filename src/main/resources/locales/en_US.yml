@@ -234,7 +234,6 @@ command-messages:
     &6DELETE &7- tsreports.delete
     &6LIST &7- tsreports.list
     &6STATUS &7- tsreports.status
-    &6REPORT &7- tsreports.use
     &6LANGUAGE &7- tsreports.language
     &6STATUSPANEL &7- tsreports.statuspanel
     &6ADMIN &7- tsreports.admin

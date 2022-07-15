@@ -58,8 +58,10 @@ public class StatusPanel extends UIFrame {
             addReport(slot, report);
             slot++;
         }
-        add(Components.getPreviousPageComponent(51, this::previousPage, paginator, getViewer()));
-        add(Components.getNextPageComponent(52, this::nextPage, paginator, getViewer()));
+        UIComponent previous = Components.getPreviousPageComponent(51, this::previousPage, paginator, getViewer());
+        if (previous != null) add(previous);
+        UIComponent next = Components.getNextPageComponent(52, this::nextPage, paginator, getViewer());
+        if (next != null) add(next);
     }
 
     private void previousPage() {

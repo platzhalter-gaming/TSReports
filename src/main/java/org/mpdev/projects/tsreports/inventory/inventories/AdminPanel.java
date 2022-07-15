@@ -3,14 +3,18 @@ package org.mpdev.projects.tsreports.inventory.inventories;
 import dev.simplix.protocolize.api.ClickType;
 import dev.simplix.protocolize.data.ItemType;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.inventory.*;
 import org.mpdev.projects.tsreports.utils.Messages;
+import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.Utils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class AdminPanel extends UIFrame {
+
+    TSReports plugin = TSReports.getInstance();
 
     public AdminPanel(UIFrame parent, ProxiedPlayer viewer) {
         super(parent, viewer);
@@ -53,7 +57,11 @@ public class AdminPanel extends UIFrame {
         component.setPermission(ClickType.LEFT_CLICK, "tsreports.clear");
         component.setConfirmationRequired(ClickType.LEFT_CLICK);
         component.setListener(ClickType.LEFT_CLICK, () -> {
-            InventoryController.runCommand(getViewer(), "reports", true, "clear");
+            long start = System.currentTimeMillis();
+            plugin.getStorageManager().deleteAllReports();
+            long finished = System.currentTimeMillis() - start;
+
+            Utils.sendText(getViewer(), "command-messages.clear", s -> s.replace("%time%", String.valueOf(finished)));
         });
         add(component);
     }
@@ -65,7 +73,12 @@ public class AdminPanel extends UIFrame {
         add(reloadButton);
         reloadButton.setPermission(ClickType.LEFT_CLICK,"tsreports.reload");
         reloadButton.setListener(ClickType.LEFT_CLICK, ()-> {
-            InventoryController.runCommand(getViewer(), "reports", true, "reload");
+            long start = System.currentTimeMillis();
+            plugin.getConfigManager().setup();
+            plugin.setCommands( PluginHelp.setupCommands() );
+            long finished = System.currentTimeMillis() - start;
+
+            Utils.sendText(getViewer(), "command-messages.reload", s -> s.replace("%time%", String.valueOf(finished)));
         });
     }
 

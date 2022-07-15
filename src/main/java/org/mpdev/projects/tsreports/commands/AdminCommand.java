@@ -35,7 +35,7 @@ public class AdminCommand extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
 
-        if (args.length == 1 && args[0].equals("login")) {
+        if (args.length == 1 && args[0].equalsIgnoreCase("login")) {
 
             if (!plugin.getCommands().get("login")) {
                 Utils.sendText(sender, "commandDisabled");
@@ -169,6 +169,7 @@ public class AdminCommand extends Command {
 
             long start = System.currentTimeMillis();
             plugin.getConfigManager().setup();
+            plugin.setCommands( PluginHelp.setupCommands() );
             long finished = System.currentTimeMillis() - start;
 
             Utils.sendText(sender, "command-messages.reload", s -> s.replace("%time%", String.valueOf(finished)));
@@ -284,7 +285,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (report.getClaimed() != null && !sender.hasPermission("tsreports.admin")) {
+            if (report.getClaimed() != null && !Utils.hasPermission(sender, "tsreports.admin")) {
                 if (!(sender instanceof ProxiedPlayer)) {
                     Utils.sendText(sender, "cannotDeleteClaimedReport");
                     return;
@@ -484,9 +485,6 @@ public class AdminCommand extends Command {
                 break;
             case ("status"):
                 permissionNode = Node.STATUS;
-                break;
-            case ("report"):
-                permissionNode = Node.REPORT;
                 break;
             case ("language"):
                 permissionNode = Node.LANGUAGE;

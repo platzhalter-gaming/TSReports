@@ -3,6 +3,7 @@ package org.mpdev.projects.tsreports.commands;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.api.plugin.TabExecutor;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.inventory.InventoryDrawer;
 import org.mpdev.projects.tsreports.inventory.inventories.LangSelector;
@@ -12,12 +13,10 @@ import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class ReportCommand extends Command {
+public class ReportCommand extends Command implements TabExecutor {
 
     private final TSReports plugin;
     private final int cooldown;
@@ -64,11 +63,6 @@ public class ReportCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(player, "tsreports.language") || !Utils.hasPermission(player, "tsreports.admin")) {
-                Utils.sendText(player, "noPermission");
-                return;
-            }
-
             InventoryDrawer.open(new LangSelector(null, player));
 
         } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("status")) {
@@ -80,11 +74,6 @@ public class ReportCommand extends Command {
 
             if (!plugin.getCommands().get("status-player")) {
                 Utils.sendText(sender, "commandDisabled");
-                return;
-            }
-
-            if (!Utils.hasPermission(player, "tsreports.statuspanel") || !Utils.hasPermission(player, "tsreports.admin")) {
-                Utils.sendText(player, "noPermission");
                 return;
             }
 
@@ -105,11 +94,6 @@ public class ReportCommand extends Command {
 
             if (!plugin.getCommands().get("report")) {
                 Utils.sendText(sender, "commandDisabled");
-                return;
-            }
-
-            if (!Utils.hasPermission(player, "tsreports.use") || !Utils.hasPermission(player, "tsreports.admin")) {
-                Utils.sendText(player, "noPermission");
                 return;
             }
 
@@ -159,6 +143,18 @@ public class ReportCommand extends Command {
 
         }
 
+    }
+
+    @Override
+    public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+        List<String> autoComplete = new ArrayList<>();
+
+        if (args.length >= 1) {
+            plugin.getProxy().getPlayers().forEach(player -> autoComplete.add(player.getName()));
+            autoComplete.addAll(plugin.getOfflinePlayers().keySet());
+        }
+
+        return autoComplete;
     }
 
 }

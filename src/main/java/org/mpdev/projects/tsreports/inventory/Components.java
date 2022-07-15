@@ -24,16 +24,9 @@ public class Components {
         return back;
     }
 
-    public static UIComponent getAirComponent(int slot) {
-        return new UIComponentImpl.Builder(ItemType.AIR)
-                .name("")
-                .slot(slot)
-                .build();
-    }
-
     public static UIComponent getPreviousPageComponent(int slot, Runnable listener, Paginator paginator, ProxiedPlayer viewer) {
         if (!paginator.hasPreviousPage()) {
-            return getAirComponent(slot);
+            return null;
         }
         UIComponent c = new UIComponentImpl.Builder(ItemType.FEATHER)
                 .name(Messages.GUI_MANAGEREPORTS_PREVIOUS_NAME.getString(viewer.getName()))
@@ -45,7 +38,7 @@ public class Components {
 
     public static UIComponent getNextPageComponent(int slot, Runnable listener, Paginator paginator, ProxiedPlayer viewer) {
         if (!paginator.hasNextPage()) {
-            return getAirComponent(slot);
+            return null;
         }
         UIComponent c = new UIComponentImpl.Builder(ItemType.FEATHER)
                 .name(Messages.GUI_MANAGEREPORTS_NEXT_NAME.getString(viewer.getName()))

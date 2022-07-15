@@ -21,10 +21,11 @@ public class ManageReports extends UIFrame {
 
     private final Paginator paginator;
     private final StorageManager storageManager = TSReports.getInstance().getStorageManager();
-    private final List<Report> reports = storageManager.getAllReports();
+    private final List<Report> reports;
 
     public ManageReports(UIFrame parent, ProxiedPlayer viewer) {
         super(parent, viewer);
+        this.reports = storageManager.getAllReports();
         paginator = new Paginator(getSize() - 9, reports);
     }
 
@@ -49,8 +50,10 @@ public class ManageReports extends UIFrame {
             addReport(slot, report);
             slot++;
         }
-        add(Components.getPreviousPageComponent(51, this::previousPage, paginator, getViewer()));
-        add(Components.getNextPageComponent(52, this::nextPage, paginator, getViewer()));
+        UIComponent previous = Components.getPreviousPageComponent(51, this::previousPage, paginator, getViewer());
+        if (previous != null) add(previous);
+        UIComponent next = Components.getNextPageComponent(52, this::nextPage, paginator, getViewer());
+        if (next != null) add(next);
     }
 
     private void addReport(int slot, Report report) {
@@ -199,7 +202,7 @@ public class ManageReports extends UIFrame {
         }
 
         public void updateFrame() {
-            InventoryDrawer.open(getParent());
+            InventoryDrawer.open(new ManageReports(null, getViewer()));
         }
 
     }

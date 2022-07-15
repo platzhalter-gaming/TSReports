@@ -2,7 +2,7 @@ package org.mpdev.projects.tsreports.utils;
 
 import net.luckperms.api.cacheddata.CachedPermissionData;
 import net.luckperms.api.model.user.User;
-import net.luckperms.api.node.types.PermissionNode;
+import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.query.QueryOptions;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -15,14 +15,13 @@ import org.bstats.charts.SingleLineChart;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.managers.ConfigManager;
 import org.mpdev.projects.tsreports.managers.StorageManager;
-import org.mpdev.projects.tsreports.objects.Node;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
 
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -131,10 +130,20 @@ public class Utils {
         }
     }
 
+    public static CachedPermissionData getOfflineData(UUID uuid) {
+        UserManager userManager = TSReports.getInstance().getApi().getUserManager();
+        CompletableFuture<User> userFuture = userManager.loadUser(uuid);
+        QueryOptions queryOptions = TSReports.getInstance().getApi().getContextManager().getQueryOptions(userFuture);
+        return (CachedPermissionData) userFuture.thenAcceptAsync(user -> user.getCachedData().getPermissionData(queryOptions));
+    }
+
     public static CachedPermissionData getPermissionData(ProxiedPlayer player) {
-        User user = TSReports.getInstance().getApi().getPlayerAdapter(ProxiedPlayer.class).getUser(player);
-        QueryOptions queryOptions = TSReports.getInstance().getApi().getContextManager().getQueryOptions(player);
-        return user.getCachedData().getPermissionData(queryOptions);
+        if (player.isConnected()) {
+            User user = TSReports.getInstance().getApi().getPlayerAdapter(ProxiedPlayer.class).getUser(player);
+            QueryOptions queryOptions = TSReports.getInstance().getApi().getContextManager().getQueryOptions(player);
+            return user.getCachedData().getPermissionData(queryOptions);
+        }
+        return getOfflineData(player.getUniqueId());
     }
 
     public static boolean hasPermission(CommandSender sender, String permission) {

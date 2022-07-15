@@ -20,6 +20,7 @@ public class PluginHelp {
         Map<String, Boolean> commands = new HashMap<>();
         adminCommands.forEach(s -> commands.put(s, plugin.getConfigManager().getBoolean("commands." + s + ".enabled")));
         reportCommands.forEach(s -> commands.put(s, plugin.getConfigManager().getBoolean("commands." + s + ".enabled")));
+        plugin.getLogger().info(commands.size() + " commands have been loaded.");
         return commands;
     }
 

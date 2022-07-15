@@ -36,7 +36,7 @@ public class ConnectionListener implements Listener {
                 connection.getSocketAddress().toString().substring(1).split(":")[0]);
 
         // If the player is entering the server for the first time, save it
-        if (!plugin.getOfflinePlayers().containsKey(player.getName())) {
+        if (!plugin.getOfflinePlayers().containsValue(player)) {
 
             plugin.debug(String.format("%s is entering the server for the first time.", player.getName()));
             storageManager.addPlayer(player);
@@ -52,6 +52,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onPostLogin(PostLoginEvent event) {
+        if (!event.getPlayer().isConnected()) return;
         ProxiedPlayer connection = event.getPlayer();
         OfflinePlayer player = plugin.getOfflinePlayers().get(event.getPlayer().getName());
 
@@ -59,7 +60,7 @@ public class ConnectionListener implements Listener {
         int reportsTillMed = plugin.getConfig().getInt("reportsTillMed");
         int reportsTillHigh = plugin.getConfig().getInt("reportsTillHigh");
 
-        if (Utils.hasPermission(connection, "tsreports.staff") || Utils.hasPermission(connection, "tsreports.admin")) {
+        if (connection.hasPermission("tsreports.staff") || connection.hasPermission("tsreports.admin")) {
 
             int reportsCount = storageManager.getReportsCount();
             String vulnerability;
@@ -81,7 +82,7 @@ public class ConnectionListener implements Listener {
     @EventHandler
     public void onDisconnect(PlayerDisconnectEvent event) {
         OfflinePlayer player = plugin.getOfflinePlayers().get(event.getPlayer().getName());
-        if (!Utils.hasPermission(event.getPlayer(), "tsreports.autologin") && player.isLoggedIn()) {
+        if (!event.getPlayer().hasPermission("tsreports.autologin") && player.isLoggedIn()) {
             player.setLoggedIn(false);
         }
     }

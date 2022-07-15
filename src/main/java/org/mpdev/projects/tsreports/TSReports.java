@@ -89,6 +89,10 @@ public final class TSReports extends Plugin {
         return commands;
     }
 
+    public void setCommands(Map<String, Boolean> commands) {
+        this.commands = commands;
+    }
+
     public InventoryController getInventoryController() {
         return inventoryController;
     }
