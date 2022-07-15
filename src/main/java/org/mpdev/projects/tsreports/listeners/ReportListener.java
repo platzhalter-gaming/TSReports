@@ -34,6 +34,9 @@ public class ReportListener implements Listener {
         // Adding reports to database
         plugin.getStorageManager().addReportToReports(report);
         plugin.getStorageManager().addReportToHistory(report);
+        
+        // Setting the operator into cooldown
+        ReportCommand.timer.put(operator.getUniqueId(), ReportCommand.cooldown);
 
         // Sending successfully reported message to operator
         Utils.sendText(operator, "command-messages.report", message -> message
