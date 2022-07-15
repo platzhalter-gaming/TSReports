@@ -91,12 +91,10 @@ public class ReportPanel extends UIFrame {
 
     public void callEvent(ProxiedPlayer player, ProxiedPlayer target, String reason) {
         plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
-        ReportCommand.timer.put(player.getUniqueId(), ReportCommand.cooldown);
     }
 
     public void callEvent(ProxiedPlayer player, OfflinePlayer target, String reason) {
         plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
-        ReportCommand.timer.put(player.getUniqueId(), ReportCommand.cooldown);
     }
 
     public int highestId() {
