@@ -14,12 +14,12 @@ public class PluginHelp {
     private static List<String> reportCommands;
 
     public static Map<String, Boolean> setupCommands() {
-        adminCommands = Arrays.asList("login, logout, gui, about, clear, reload, claim, get, delete, list, status-admin, addperm".split(", "));
+        adminCommands = Arrays.asList("login, logout, gui, clear, reload, claim, get, delete, list, status-admin, addperm".split(", "));
         reportCommands = Arrays.asList("status-player, report, language".split(", "));
 
         Map<String, Boolean> commands = new HashMap<>();
-        adminCommands.forEach(s -> commands.put(s, plugin.getConfigManager().getBoolean("commands." + s + ".enabled")));
-        reportCommands.forEach(s -> commands.put(s, plugin.getConfigManager().getBoolean("commands." + s + ".enabled")));
+        adminCommands.forEach(s -> commands.put(s, plugin.getConfig().getBoolean("commands." + s)));
+        reportCommands.forEach(s -> commands.put(s, plugin.getConfig().getBoolean("commands." + s)));
         plugin.getLogger().info(commands.size() + " commands have been loaded.");
         return commands;
     }
@@ -32,7 +32,7 @@ public class PluginHelp {
         for (Map.Entry<String, Boolean> entry : plugin.getCommands().entrySet()) {
             if (entry.getValue()) {
                 if (reportCommands.contains(entry.getKey())) continue;
-                Utils.sendText(sender, "commands." + entry.getKey() + ".usage");
+                Utils.sendText(sender, "command-usages." + entry.getKey());
             }
         }
         Utils.sendText(sender, "adminHelp.below");
@@ -46,7 +46,7 @@ public class PluginHelp {
         for (Map.Entry<String, Boolean> entry : plugin.getCommands().entrySet()) {
             if (entry.getValue()) {
                 if (adminCommands.contains(entry.getKey())) continue;
-                Utils.sendText(sender, "commands." + entry.getKey() + ".usage");
+                Utils.sendText(sender, "command-usages." + entry.getKey());
             }
         }
         Utils.sendText(sender, "reportHelp.below");

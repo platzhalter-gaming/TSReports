@@ -234,8 +234,6 @@ command-messages:
     &6DELETE &7- tsreports.delete
     &6LIST &7- tsreports.list
     &6STATUS &7- tsreports.status
-    &6LANGUAGE &7- tsreports.language
-    &6STATUSPANEL &7- tsreports.statuspanel
     &6ADMIN &7- tsreports.admin
     &6GUI_ADMIN &7- tsreports.gui.admin
     &6GUI_MANAGEREPORTS &7- tsreports.gui.managereports
@@ -253,49 +251,19 @@ adminHelp:
   required: '&e<> &7= required'
   below: '&7==== &6Admin-Help &7===='
 
-commands:
-  login:
-    usage: '&7/reports login'
-    enabled: true
-  logout:
-    usage: '&7/reports logout'
-    enabled: true
-  gui:
-    usage: '&7/reports gui'
-    enabled: true
-  about:
-    usage: '&7/reports about'
-    enabled: true
-  clear:
-    usage: '&7/reports clear'
-    enabled: true
-  reload:
-    usage: '&7/reports reload'
-    enabled: true
-  claim:
-    usage: '&7/reports claim <id>'
-    enabled: true
-  get:
-    usage: '&7/reports get <id>'
-    enabled: true
-  delete:
-    usage: '&7/reports delete <id>'
-    enabled: true
-  list:
-    usage: '&7/reports list [page]'
-    enabled: true
-  status-admin:
-    usage: '&7/reports status <id> <new, wip, complete>'
-    enabled: true
-  status-player:
-    usage: '&7/report status [page]'
-    enabled: true
-  report:
-    usage: '&7/report <player/uuid>'
-    enabled: true
-  language:
-    usage: '&7/report language'
-    enabled: true
-  addperm:
-    usage: '&7/reports addperm <node> <player/uuid>'
-    enabled: true
+command-usages:
+  login: '&7/reports login'
+  logout: '&7/reports logout'
+  gui: '&7/reports gui'
+  about: '&7/reports about'
+  clear: '&7/reports clear'
+  reload: '&7/reports reload'
+  claim: '&7/reports claim <id>'
+  get: '&7/reports get <id>'
+  delete: '&7/reports delete <id>'
+  list: '&7/reports list [page]'
+  status-admin: '&7/reports status <id> <new, wip, complete>'
+  status-player: '&7/report status [page]'
+  report: '&7/report <player/uuid>'
+  language: '&7/report language'
+  addperm: '&7/reports addperm <node> <player/uuid>'

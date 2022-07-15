@@ -67,7 +67,7 @@ public class ManageReports extends UIFrame {
                 .slot(slot)
                 .build();
         component.setListener(ClickType.LEFT_CLICK, () -> {
-            if (report.getStatus().equals(Status.COMPLETE)) {
+            if (report.getStatus().equals(Status.COMPLETE) && !Utils.hasPermission(getViewer(), "tsreports.admin")) {
                 Utils.sendText(getViewer(), "alreadyCompleted");
                 return;
             }
@@ -131,9 +131,11 @@ public class ManageReports extends UIFrame {
                     .build();
             component.setPermission(ClickType.LEFT_CLICK, "tsreports.delete");
             component.setListener(ClickType.LEFT_CLICK, () -> {
-                if (report.getClaimed() != null && !report.getClaimed().equals(getViewer().getUniqueId())) {
-                    Utils.sendText(getViewer(), "cannotDeleteClaimedReport");
-                    return;
+                if (!Utils.hasPermission(getViewer(), "tsreports.admin")) {
+                    if (report.getClaimed() != null && !report.getClaimed().equals(getViewer().getUniqueId())) {
+                        Utils.sendText(getViewer(), "cannotDeleteClaimedReport");
+                        return;
+                    }
                 }
                 storageManager.deleteReport(report.getReportId());
                 Utils.sendText(getViewer(), "command-messages.delete", s -> s.replace("%id%", "" + report.getReportId()));

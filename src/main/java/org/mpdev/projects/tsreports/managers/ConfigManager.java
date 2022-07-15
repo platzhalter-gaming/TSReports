@@ -103,25 +103,6 @@ public class ConfigManager {
         return Utils.color(placeholders.apply(message));
     }
 
-    public boolean getBoolean(String path) {
-        if (locales.containsKey(defaultLocale)) {
-            return locales.get(defaultLocale).getBoolean(path);
-        }
-        plugin.getLogger().warning("The searched value was not found in the language file and the default language file: " + path);
-        return false;
-    }
-
-    public boolean getBoolean(String path, String playerName) {
-        Locale locale = new PlayerLocale(playerName).getLocale();
-        boolean bool;
-        if (locales.containsKey(locale)) {
-            bool = locales.get(locale).getBoolean(path);
-        } else {
-            bool = getBoolean(path);
-        }
-        return bool;
-    }
-
     public List<String> getStringList(String path) {
         if (locales.containsKey(defaultLocale)) {
             List<String> stringList = locales.get(defaultLocale).getStringList(path);

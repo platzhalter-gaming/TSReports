@@ -36,7 +36,7 @@ public class ConnectionListener implements Listener {
                 connection.getSocketAddress().toString().substring(1).split(":")[0]);
 
         // If the player is entering the server for the first time, save it
-        if (!plugin.getOfflinePlayers().containsValue(player)) {
+        if (!plugin.getOfflinePlayers().containsKey(player.getName())) {
 
             plugin.debug(String.format("%s is entering the server for the first time.", player.getName()));
             storageManager.addPlayer(player);

@@ -27,6 +27,23 @@ protocolize: true
 
 #⮟ GENERAL ⮟
 
+#⮟ determine which commands should be enabled / disabled
+commands:
+  login: true
+  logout: true
+  gui: true
+  clear: true
+  reload: true
+  claim: true
+  get: true
+  delete: true
+  list: true
+  status-admin: true
+  addperm: true
+  status-player: true
+  report: true
+  language: true
+
 #⮟ determines how the admin command can be executed
 adminCommands:
   - reports # ← Example: /reports delete <id>

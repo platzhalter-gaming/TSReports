@@ -11,8 +11,6 @@ public enum Node {
     DELETE("tsreports.delete"),
     LIST("tsreports.list"),
     STATUS("tsreports.status"),
-    LANGUAGE("tsreports.language"),
-    STATUSPANEL("tsreports.statuspanel"),
     ADMIN("tsreports.admin"),
     GUI_ADMIN("tsreports.gui.admin"),
     GUI_MANAGEREPORTS("tsreports.gui.managereports"),

@@ -7,6 +7,7 @@ import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import org.mpdev.projects.tsreports.TSReports;
+import org.mpdev.projects.tsreports.commands.ReportCommand;
 import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.inventory.*;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
@@ -90,10 +91,12 @@ public class ReportPanel extends UIFrame {
 
     public void callEvent(ProxiedPlayer player, ProxiedPlayer target, String reason) {
         plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
+        ReportCommand.timer.put(player.getUniqueId(), ReportCommand.cooldown);
     }
 
     public void callEvent(ProxiedPlayer player, OfflinePlayer target, String reason) {
         plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
+        ReportCommand.timer.put(player.getUniqueId(), ReportCommand.cooldown);
     }
 
     public int highestId() {

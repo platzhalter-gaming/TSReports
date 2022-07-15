@@ -19,23 +19,23 @@ import java.util.concurrent.TimeUnit;
 public class ReportCommand extends Command implements TabExecutor {
 
     private final TSReports plugin;
-    private final int cooldown;
-    private final Map<UUID, Integer> cd = new HashMap<>();
+    public static int cooldown;
+    public static final Map<UUID, Integer> timer = new HashMap<>();
 
     public ReportCommand(TSReports plugin, String command, String permission, String... aliases) {
         super(command, permission, aliases);
         this.plugin = plugin;
-        this.cooldown = plugin.getConfig().getInt("reportCooldown", 60);
+        cooldown = plugin.getConfig().getInt("reportCooldown", 60);
 
         plugin.getProxy().getScheduler().schedule(plugin, () -> {
-            if (cd.isEmpty())return;
-            for (UUID uuid : cd.keySet()) {
-                int timeleft = cd.get(uuid);
+            if (timer.isEmpty())return;
+            for (UUID uuid : timer.keySet()) {
+                int timeleft = timer.get(uuid);
 
                 if (timeleft <= 0) {
-                    cd.remove(uuid);
+                    timer.remove(uuid);
                 } else {
-                    cd.put(uuid, timeleft - 1);
+                    timer.put(uuid, timeleft - 1);
                 }
             }
         }, 1, 1, TimeUnit.SECONDS);
@@ -97,8 +97,8 @@ public class ReportCommand extends Command implements TabExecutor {
                 return;
             }
 
-            if (cd.containsKey(player.getUniqueId())) {
-                Utils.sendText(player, "reportCooldown", message -> message.replace("%time%", String.valueOf(cd.get(player.getUniqueId()))));
+            if (timer.containsKey(player.getUniqueId())) {
+                Utils.sendText(player, "reportCooldown", message -> message.replace("%time%", String.valueOf(timer.get(player.getUniqueId()))));
                 return;
             }
 
@@ -135,8 +135,6 @@ public class ReportCommand extends Command implements TabExecutor {
 
             }
 
-            cd.put(player.getUniqueId(), cooldown);
-
         } else {
 
             PluginHelp.reportHelp(player);
@@ -150,7 +148,6 @@ public class ReportCommand extends Command implements TabExecutor {
         List<String> autoComplete = new ArrayList<>();
 
         if (args.length >= 1) {
-            plugin.getProxy().getPlayers().forEach(player -> autoComplete.add(player.getName()));
             autoComplete.addAll(plugin.getOfflinePlayers().keySet());
         }
 

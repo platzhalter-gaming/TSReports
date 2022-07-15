@@ -139,11 +139,6 @@ public class AdminCommand extends Command {
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase("about")) {
 
-            if (!plugin.getCommands().get("about")) {
-                Utils.sendText(sender, "commandDisabled");
-                return;
-            }
-
             sendMessage(sender, "&a&m+                                                        +");
             sendMessage(sender, String.format("&6&l%s", plugin.getDescription().getName()));
             sendMessage(sender, "&eThe best report plugin for your server.");
@@ -485,12 +480,6 @@ public class AdminCommand extends Command {
                 break;
             case ("status"):
                 permissionNode = Node.STATUS;
-                break;
-            case ("language"):
-                permissionNode = Node.LANGUAGE;
-                break;
-            case ("statuspanel"):
-                permissionNode = Node.STATUSPANEL;
                 break;
             case ("admin"):
                 permissionNode = Node.ADMIN;
