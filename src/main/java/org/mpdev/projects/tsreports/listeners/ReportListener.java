@@ -5,6 +5,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
 import org.mpdev.projects.tsreports.TSReports;
+import org.mpdev.projects.tsreports.commands.ReportCommand;
 import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
@@ -34,7 +35,7 @@ public class ReportListener implements Listener {
         // Adding reports to database
         plugin.getStorageManager().addReportToReports(report);
         plugin.getStorageManager().addReportToHistory(report);
-        
+
         // Setting the operator into cooldown
         ReportCommand.timer.put(operator.getUniqueId(), ReportCommand.cooldown);
 
