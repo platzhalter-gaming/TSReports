@@ -131,7 +131,6 @@ public class ReportCommand extends Command implements TabExecutor {
             } else {
 
                 Utils.sendText(player, "playerNotFound");
-                return;
 
             }
 

@@ -18,6 +18,7 @@ public class StorageManager {
 
     private final TSReports plugin = TSReports.getInstance();
     private DBCore core;
+    boolean mysqlEnabled;
 
     public StorageManager() {
         initializeTables();
@@ -25,8 +26,10 @@ public class StorageManager {
     }
 
     public void initializeTables() {
-        Configuration config = plugin.getConfigManager().getConfig();
-        if (config.getBoolean("mysql.enabled")) {
+        Configuration config = plugin.getConfig();
+        mysqlEnabled = config.getBoolean("mysql.enabled");
+
+        if (mysqlEnabled) {
             core = new MySQLCore(
                     config.getString("mysql.host"),
                     config.getString("mysql.database"),
@@ -36,6 +39,7 @@ public class StorageManager {
         } else {
             core = new H2Core();
         }
+
         if (!core.existsTable("tsreports_reports")) {
             plugin.getLogger().info("Creating table: tsreports_reports");
             String query = "CREATE TABLE IF NOT EXISTS tsreports_reports (" +
@@ -50,6 +54,7 @@ public class StorageManager {
                     " PRIMARY KEY (id))";
             core.execute(query);
         }
+
         if (!core.existsTable("tsreports_reporthistory")) {
             plugin.getLogger().info("Creating table: tsreports_reporthistory");
             String query = "CREATE TABLE IF NOT EXISTS tsreports_reporthistory (" +
@@ -64,6 +69,7 @@ public class StorageManager {
                     " PRIMARY KEY (id))";
             core.execute(query);
         }
+
         if (!core.existsTable("tsreports_players")) {
             plugin.getLogger().info("Creating table: tsreports_players");
             String query = "CREATE TABLE IF NOT EXISTS tsreports_players (" +
@@ -78,10 +84,25 @@ public class StorageManager {
     }
 
     public void checkNewColumns() {
-        core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
-                "tsreports_reports", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
-        core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
-                "tsreports_reporthistory", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+        if (mysqlEnabled) {
+
+            core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
+                    "tsreports_reports", "server LONGTEXT NOT NULL AFTER operator"));
+            core.execute(String.format("ALTER TABLE %s ALTER COLUMN %s",
+                    "tsreports_reports", "server SET DEFAULT 'ALL'"));
+            core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
+                    "tsreports_reporthistory", "server LONGTEXT NOT NULL AFTER operator"));
+            core.execute(String.format("ALTER TABLE %s ALTER COLUMN %s",
+                    "tsreports_reporthistory", "server SET DEFAULT 'ALL'"));
+
+        } else {
+
+            core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
+                    "tsreports_reports", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+            core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
+                    "tsreports_reporthistory", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+
+        }
     }
 
     public String getStorageProvider() {
