@@ -85,22 +85,20 @@ public class StorageManager {
 
     public void checkNewColumns() {
         if (mysqlEnabled) {
+            if (!core.existsColumn("tsreports_reports", "server")) {
 
-            core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
-                    "tsreports_reports", "server LONGTEXT NOT NULL AFTER operator"));
-            core.execute(String.format("ALTER TABLE %s ALTER COLUMN %s",
-                    "tsreports_reports", "server SET DEFAULT 'ALL'"));
-            core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
-                    "tsreports_reporthistory", "server LONGTEXT NOT NULL AFTER operator"));
-            core.execute(String.format("ALTER TABLE %s ALTER COLUMN %s",
-                    "tsreports_reporthistory", "server SET DEFAULT 'ALL'"));
+                core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
+                        "tsreports_reports", "server LONGTEXT NOT NULL AFTER operator"));
+                core.execute(String.format("ALTER TABLE %s ADD COLUMN %s",
+                        "tsreports_reporthistory", "server LONGTEXT NOT NULL AFTER operator"));
 
+            }
         } else {
 
             core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
-                    "tsreports_reports", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+                    "tsreports_reports", "server LONGTEXT NOT NULL AFTER operator"));
             core.execute(String.format("ALTER TABLE %s ADD COLUMN IF NOT EXISTS %s",
-                    "tsreports_reporthistory", "server LONGTEXT DEFAULT 'ALL' NOT NULL AFTER operator"));
+                    "tsreports_reporthistory", "server LONGTEXT NOT NULL AFTER operator"));
 
         }
     }
@@ -110,24 +108,26 @@ public class StorageManager {
     }
 
     public void addReportToReports(Report report) {
-        String query = String.format("INSERT INTO tsreports_reports (id, name, uuid, ip, reason, operator, status) VALUES ('%s','%s','%s','%s','%s','%s','%s')",
+        String query = String.format("INSERT INTO tsreports_reports (id, name, uuid, ip, reason, operator, server, status) VALUES ('%s','%s','%s','%s','%s','%s','%s','%s')",
                 report.getReportId(),
                 report.getPlayerName(),
                 report.getUniqueId().toString(),
                 report.getAddress(),
                 report.getReason(),
                 report.getOperator(),
+                report.getServer(),
                 report.getStatus().getStatusName());
         core.executeUpdateAsync(query);
     }
 
     public void addReportToHistory(Report report) {
-        String query = String.format("INSERT INTO tsreports_reporthistory (name, uuid, ip, reason, operator, status) VALUES ('%s','%s','%s','%s','%s','%s')",
+        String query = String.format("INSERT INTO tsreports_reporthistory (name, uuid, ip, reason, operator, server, status) VALUES ('%s','%s','%s','%s','%s','%s','%s')",
                 report.getPlayerName(),
                 report.getUniqueId().toString(),
                 report.getAddress(),
                 report.getReason(),
                 report.getOperator(),
+                report.getServer(),
                 report.getStatus().getStatusName());
         core.executeUpdateAsync(query);
     }

@@ -6,12 +6,12 @@
 
     <groupId>org.mpdev.projects</groupId>
     <artifactId>TSReports</artifactId>
-    <version>3.2.2</version>
+    <version>3.3.3</version>
     <packaging>jar</packaging>
 
     <name>TSReports</name>
 
-    <description>Advanced report plugin for servers</description>
+    <description>The best report plugin for your server</description>
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

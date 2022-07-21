@@ -26,6 +26,7 @@ public class ReportListener implements Listener {
         Report report = event.getReport();
         ProxiedPlayer operator = plugin.getProxy().getPlayer(report.getOperator());
 
+        // Check if the reported player has admin permission
         ProxiedPlayer target = plugin.getProxy().getPlayer(report.getUniqueId());
         if (target != null && Utils.hasPermission(target, "tsreports.admin")) {
             Utils.sendText(operator, "unableToReport");
