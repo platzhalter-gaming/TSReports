@@ -7,7 +7,6 @@ import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import org.mpdev.projects.tsreports.TSReports;
-import org.mpdev.projects.tsreports.commands.ReportCommand;
 import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.inventory.*;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
@@ -59,9 +58,10 @@ public class ReportPanel extends UIFrame {
         addReason(ItemType.FEATHER, Messages.GUI_REPORTPANEL_REASONS_FLYING.getString(getViewer().getName()), 12, "Flying");
         addReason(ItemType.DIAMOND_ORE, Messages.GUI_REPORTPANEL_REASONS_XRAY.getString(getViewer().getName()), 14, "X-Ray");
         addReason(ItemType.TNT, Messages.GUI_REPORTPANEL_REASONS_GRIEFING.getString(getViewer().getName()), 16, "Griefing");
-        addReason(ItemType.NAME_TAG, Messages.GUI_REPORTPANEL_REASONS_NAME.getString(getViewer().getName()), 20, "Name");
-        addReason(ItemType.SKELETON_SKULL, Messages.GUI_REPORTPANEL_REASONS_SKIN.getString(getViewer().getName()), 22, "Skin");
-        addReason(ItemType.PAPER, Messages.GUI_REPORTPANEL_REASONS_OTHER.getString(getViewer().getName()), 24, "Other");
+        addReason(ItemType.NAME_TAG, Messages.GUI_REPORTPANEL_REASONS_NAME.getString(getViewer().getName()), 19, "Name");
+        addReason(ItemType.SKELETON_SKULL, Messages.GUI_REPORTPANEL_REASONS_SKIN.getString(getViewer().getName()), 21, "Skin");
+        addReason(ItemType.WRITABLE_BOOK, Messages.GUI_REPORTPANEL_REASONS_CHAT.getString(getViewer().getName()), 23, "Chat");
+        addReason(ItemType.PAPER, Messages.GUI_REPORTPANEL_REASONS_OTHER.getString(getViewer().getName()), 25, "Other");
 
         for (int i = 27; i < 35; i++) {
             add(Components.getBarrierComponent(i, getViewer()));

@@ -47,6 +47,7 @@ alreadyClaimed: '%prefix% &7This report is already claimed.'
 notClaimed: '%prefix% &7This report has not been claimed.'
 alreadyCompleted: '%prefix% &7This report has already been completed.'
 luckPerms: '%prefix% &cLuckPerms is needed for this process.'
+sameStatus: '%prefix% &cThis report already has this status.'
 
 otherReason:
   message: '%prefix% &7Type in the reason you want to report this player.'
@@ -81,7 +82,7 @@ gui:
     adminpanel:
       name: '&eAdmin Panel'
   languageselector:
-      title: '&eLangSelector - Current: &8{0}'
+    title: '&eLangSelector - Current: &8{0}'
   adminpanel:
     title: '&eAdmin Panel'
     reload:
@@ -130,6 +131,7 @@ gui:
       griefing: 'Griefing'
       name: 'Name'
       skin: 'Skin'
+      chat: 'Chat'
       other: 'Other'
   specificreport:
     title: '&bReport #%id%'

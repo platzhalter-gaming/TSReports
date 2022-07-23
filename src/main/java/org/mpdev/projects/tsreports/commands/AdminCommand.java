@@ -10,14 +10,17 @@ import net.md_5.bungee.api.plugin.Command;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.inventory.InventoryDrawer;
 import org.mpdev.projects.tsreports.inventory.inventories.MainFrame;
+import org.mpdev.projects.tsreports.managers.DiscordManager;
+import org.mpdev.projects.tsreports.objects.Node;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
 import org.mpdev.projects.tsreports.objects.Status;
-import org.mpdev.projects.tsreports.objects.Node;
 import org.mpdev.projects.tsreports.utils.Luck;
 import org.mpdev.projects.tsreports.utils.PluginHelp;
 import org.mpdev.projects.tsreports.utils.Utils;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,10 +28,12 @@ public class AdminCommand extends Command {
 
     private final TSReports plugin;
     private final int listPageLimit;
+    private final DiscordManager discordManager;
 
     public AdminCommand(TSReports plugin, String command, String permission, String... aliases) {
         super(command, permission, aliases);
         this.plugin = plugin;
+        this.discordManager = plugin.getDiscordManager();
         this.listPageLimit = plugin.getConfig().getInt("listPageLimit", 10);
     }
 
@@ -47,7 +52,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.login", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -75,7 +80,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.logout", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -103,7 +108,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.gui", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -117,7 +122,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.clear", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -130,7 +135,7 @@ public class AdminCommand extends Command {
 
         } else if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
 
-            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.login", "tsreports.logout", "tsreports.gui", "tsreports.clear", "tsreports.reload", "tsreports.claim", "tsreports.get", "tsreports.delete", "tsreports.list", "tsreports.status", "tsreports.addperm", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -157,7 +162,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.reload", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -183,7 +188,7 @@ public class AdminCommand extends Command {
 
             ProxiedPlayer player = (ProxiedPlayer) sender;
 
-            if (!Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.claim", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -217,6 +222,7 @@ public class AdminCommand extends Command {
             plugin.getStorageManager().updateStatus(id, Status.WIP);
 
             Utils.sendText(sender, "command-messages.claim", s -> s.replace("%id%", "" + id));
+            discordManager.sendClaimEmbed(sender, id);
 
         } else if (args.length == 2 && args[0].equalsIgnoreCase("get")) {
 
@@ -225,7 +231,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.get", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -257,7 +263,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.delete", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -280,12 +286,9 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (report.getClaimed() != null && !Utils.hasPermission(sender, "tsreports.admin")) {
-                if (!(sender instanceof ProxiedPlayer)) {
-                    Utils.sendText(sender, "cannotDeleteClaimedReport");
-                    return;
-                }
-                if (!report.getClaimed().equals(((ProxiedPlayer) sender).getUniqueId())) {
+            if (report.getClaimed() != null && !Utils.hasPermission(sender, Collections.singletonList("tsreports.admin")) && sender instanceof ProxiedPlayer) {
+                ProxiedPlayer player = (ProxiedPlayer) sender;
+                if (!report.getClaimed().equals(player.getUniqueId())) {
                     Utils.sendText(sender, "cannotDeleteClaimedReport");
                     return;
                 }
@@ -293,6 +296,7 @@ public class AdminCommand extends Command {
 
             plugin.getStorageManager().deleteReport(id);
             Utils.sendText(sender, "command-messages.delete", s -> s.replace("%id%", "" + id));
+            discordManager.sendDeleteEmbed(sender, id);
 
         } else if ((args.length == 1 || args.length == 2) && args[0].equalsIgnoreCase("list")) {
 
@@ -301,7 +305,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.list", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -331,7 +335,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.status", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -361,10 +365,21 @@ public class AdminCommand extends Command {
                 return;
             }
 
+            if (report.getStatus().equals(status)) {
+                Utils.sendText(sender, "sameStatus");
+                return;
+            }
+
             report.setStatus(status);
             plugin.getStorageManager().updateStatus(id, status);
 
             Utils.sendText(sender, "command-messages.status", s -> s.replace("%status%", status.getStatusName()).replace("%id%", "" + id));
+
+            if (status == Status.COMPLETE) {
+                discordManager.sendCompleteEmbed(sender, id);
+            } else if (status == Status.WIP) {
+                discordManager.sendClaimEmbed(sender, id);
+            }
 
         } else if ((args.length == 1 || args.length == 2 || args.length == 3) && args[0].equalsIgnoreCase("addperm")) {
 
@@ -378,7 +393,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.hasPermission(sender, "tsreports.addperm") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.addperm", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }
@@ -417,7 +432,7 @@ public class AdminCommand extends Command {
 
         } else {
 
-            if (!Utils.hasPermission(sender, "tsreports.gui") || !Utils.hasPermission(sender, "tsreports.login") || !Utils.hasPermission(sender, "tsreports.logout") || !Utils.hasPermission(sender, "tsreports.clear") || !Utils.hasPermission(sender, "tsreports.reload") || !Utils.hasPermission(sender, "tsreports.claim") || !Utils.hasPermission(sender, "tsreports.get") || !Utils.hasPermission(sender, "tsreports.delete") || !Utils.hasPermission(sender, "tsreports.list") || !Utils.hasPermission(sender, "tsreports.status") || !Utils.hasPermission(sender, "tsreports.admin")) {
+            if (!Utils.hasPermission(sender, Arrays.asList("tsreports.login", "tsreports.logout", "tsreports.gui", "tsreports.clear", "tsreports.reload", "tsreports.claim", "tsreports.get", "tsreports.delete", "tsreports.list", "tsreports.status", "tsreports.addperm", "tsreports.admin"))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }

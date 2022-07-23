@@ -33,6 +33,7 @@ public enum Messages {
     GUI_REPORTPANEL_REASONS_GRIEFING("gui.reportpanel.reasons.griefing"),
     GUI_REPORTPANEL_REASONS_NAME("gui.reportpanel.reasons.name"),
     GUI_REPORTPANEL_REASONS_SKIN("gui.reportpanel.reasons.skin"),
+    GUI_REPORTPANEL_REASONS_CHAT("gui.reportpanel.reasons.chat"),
     GUI_REPORTPANEL_REASONS_OTHER("gui.reportpanel.reasons.other"),
     GUI_SPECIFICREPORT_TITLE("gui.specificreport.title"),
     GUI_SPECIFICREPORT_DELETE_NAME("gui.specificreport.delete.name"),

@@ -7,6 +7,7 @@ import dev.simplix.protocolize.data.Sound;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.inventory.*;
+import org.mpdev.projects.tsreports.managers.DiscordManager;
 import org.mpdev.projects.tsreports.managers.StorageManager;
 import org.mpdev.projects.tsreports.objects.Report;
 import org.mpdev.projects.tsreports.objects.Status;
@@ -14,18 +15,18 @@ import org.mpdev.projects.tsreports.utils.Messages;
 import org.mpdev.projects.tsreports.utils.Paginator;
 import org.mpdev.projects.tsreports.utils.Utils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ManageReports extends UIFrame {
 
     private final Paginator paginator;
-    private final StorageManager storageManager = TSReports.getInstance().getStorageManager();
     private final List<Report> reports;
 
     public ManageReports(UIFrame parent, ProxiedPlayer viewer) {
         super(parent, viewer);
-        this.reports = storageManager.getAllReports();
+        this.reports = TSReports.getInstance().getStorageManager().getAllReports();
         paginator = new Paginator(getSize() - 9, reports);
     }
 
@@ -67,7 +68,7 @@ public class ManageReports extends UIFrame {
                 .slot(slot)
                 .build();
         component.setListener(ClickType.LEFT_CLICK, () -> {
-            if (report.getStatus().equals(Status.COMPLETE) && !Utils.hasPermission(getViewer(), "tsreports.admin")) {
+            if (report.getStatus().equals(Status.COMPLETE) && !Utils.hasPermission(getViewer(), Collections.singletonList("tsreports.admin"))) {
                 Utils.sendText(getViewer(), "alreadyCompleted");
                 return;
             }
@@ -96,6 +97,7 @@ public class ManageReports extends UIFrame {
 
         private final Report report;
         private final StorageManager storageManager = TSReports.getInstance().getStorageManager();
+        private final DiscordManager discordManager = TSReports.getInstance().getDiscordManager();
 
         public SpecificReport(UIFrame parent, ProxiedPlayer viewer, Report report) {
             super(parent, viewer);
@@ -131,7 +133,7 @@ public class ManageReports extends UIFrame {
                     .build();
             component.setPermission(ClickType.LEFT_CLICK, "tsreports.delete");
             component.setListener(ClickType.LEFT_CLICK, () -> {
-                if (!Utils.hasPermission(getViewer(), "tsreports.admin")) {
+                if (!Utils.hasPermission(getViewer(), Collections.singletonList("tsreports.admin"))) {
                     if (report.getClaimed() != null && !report.getClaimed().equals(getViewer().getUniqueId())) {
                         Utils.sendText(getViewer(), "cannotDeleteClaimedReport");
                         return;
@@ -139,6 +141,7 @@ public class ManageReports extends UIFrame {
                 }
                 storageManager.deleteReport(report.getReportId());
                 Utils.sendText(getViewer(), "command-messages.delete", s -> s.replace("%id%", "" + report.getReportId()));
+                discordManager.sendDeleteEmbed(getViewer(), report.getReportId());
                 updateFrame();
             });
             component.setConfirmationRequired(ClickType.LEFT_CLICK);
@@ -165,6 +168,7 @@ public class ManageReports extends UIFrame {
                 report.setStatus(Status.WIP);
                 InventoryDrawer.playSound(getViewer(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.BLOCKS);
                 Utils.sendText(getViewer(), "command-messages.claim", s -> s.replace("%id%", "" + report.getReportId()));
+                discordManager.sendClaimEmbed(getViewer(), report.getReportId());
                 updateFrame();
             });
             add(component);
@@ -186,6 +190,7 @@ public class ManageReports extends UIFrame {
                 storageManager.updateStatus(report.getReportId(), Status.COMPLETE);
                 report.setStatus(Status.COMPLETE);
                 InventoryDrawer.playSound(getViewer(), Sound.BLOCK_NOTE_BLOCK_PLING, SoundCategory.BLOCKS);
+                discordManager.sendCompleteEmbed(getViewer(), report.getReportId());
                 updateFrame();
             });
             add(component);
@@ -204,7 +209,7 @@ public class ManageReports extends UIFrame {
         }
 
         public void updateFrame() {
-            InventoryDrawer.open(new ManageReports(null, getViewer()));
+            InventoryDrawer.open(new ManageReports(new MainFrame(getViewer()), getViewer()));
         }
 
     }

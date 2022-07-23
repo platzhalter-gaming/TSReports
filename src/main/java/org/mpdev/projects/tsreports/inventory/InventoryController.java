@@ -54,7 +54,7 @@ public class InventoryController {
         String permission = component.getPermission(clickType);
         if (permission != null) {
             ProxiedPlayer sender = TSReports.getInstance().getProxy().getPlayer(player.uniqueId());
-            if (!Utils.hasPermission(sender, permission)) {
+            if (!Utils.hasPermission(sender, Collections.singletonList(permission))) {
                 Utils.sendText(sender, "noPermission");
                 return;
             }

@@ -11,6 +11,8 @@ import org.mpdev.projects.tsreports.inventory.UIFrame;
 import org.mpdev.projects.tsreports.utils.Messages;
 import org.mpdev.projects.tsreports.utils.Utils;
 
+import java.util.Collections;
+
 public class MainFrame extends UIFrame {
 
     public MainFrame(ProxiedPlayer viewer) {
@@ -45,7 +47,7 @@ public class MainFrame extends UIFrame {
 
     private void addManageReports() {
         if (!TSReports.getInstance().getConfig().getBoolean("gui.managereports")) return;
-        if (!Utils.hasPermission(getViewer(), "tsreports.gui.managereports")) return;
+        if (!Utils.hasPermission(getViewer(), Collections.singletonList("tsreports.gui.managereports"))) return;
         UIComponent manageReports = new UIComponentImpl.Builder(ItemType.DIAMOND_AXE)
                 .name(Messages.GUI_MAIN_MANAGEREPORTS_NAME.getString(getViewer().getName()))
                 .slot(13).build();
@@ -55,7 +57,7 @@ public class MainFrame extends UIFrame {
 
     private void addAdminPanel() {
         if (!TSReports.getInstance().getConfig().getBoolean("gui.adminpanel")) return;
-        if (!Utils.hasPermission(getViewer(), "tsreports.gui.admin")) return;
+        if (!Utils.hasPermission(getViewer(), Collections.singletonList("tsreports.gui.admin"))) return;
         UIComponent adminPanel = new UIComponentImpl.Builder(ItemType.COMMAND_BLOCK)
                 .name(Messages.GUI_MAIN_ADMINPANEL_NAME.getString(getViewer().getName()))
                 .slot(15).build();

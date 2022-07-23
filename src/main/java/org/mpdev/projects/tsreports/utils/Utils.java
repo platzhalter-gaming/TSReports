@@ -1,9 +1,7 @@
 package org.mpdev.projects.tsreports.utils;
 
-import net.luckperms.api.cacheddata.CachedPermissionData;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.model.user.UserManager;
-import net.luckperms.api.query.QueryOptions;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -18,10 +16,11 @@ import org.mpdev.projects.tsreports.managers.StorageManager;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 public class Utils {
 
@@ -59,10 +58,6 @@ public class Utils {
         return TSReports.getInstance().getConfigManager().getMessage(path, playerName, placeholders);
     }
 
-    public static String getText(String playerName, String path) {
-        return TSReports.getInstance().getConfigManager().getMessage(path, playerName);
-    }
-
     public static String replaceReportPlaceholders(String message, Report report) {
         return message.replace("%id%", "" + report.getReportId())
                 .replace("%player%", report.getPlayerName())
@@ -72,6 +67,11 @@ public class Utils {
                 .replace("%address%", report.getAddress())
                 .replace("%server%", report.getServer())
                 .replace("%status%", report.getStatus().getStatusName());
+    }
+
+    public static String replaceEmbedPlaceholders(String message, CommandSender player, int reportId) {
+        return message.replace("%operator%", player.getName())
+                .replace("%id%", "" + reportId);
     }
 
     public static String replaceStatusPlaceholders(String message, ProxiedPlayer player) {
@@ -102,6 +102,17 @@ public class Utils {
                 .replace("%staffOnline%", "" + staffOnline);
     }
 
+    public static LuckPerms getLuckPerms() {
+        if (isPluginEnabled("LuckPerms")) {
+            try {
+                return LuckPermsProvider.get();
+            } catch (IllegalStateException e) {
+                TSReports.getInstance().getLogger().log(Level.SEVERE, "There has been a problem with LuckPerms: " + e.getMessage(), e);
+            }
+        }
+        return null;
+    }
+
     public static boolean isOnline(String uuidOrName) {
         TSReports plugin = TSReports.getInstance();
         ProxiedPlayer player = uuidOrName.length() == 36
@@ -130,27 +141,17 @@ public class Utils {
         }
     }
 
-    public static CachedPermissionData getOfflineData(UUID uuid) {
-        UserManager userManager = TSReports.getInstance().getApi().getUserManager();
-        CompletableFuture<User> userFuture = userManager.loadUser(uuid);
-        QueryOptions queryOptions = TSReports.getInstance().getApi().getContextManager().getQueryOptions(userFuture);
-        return (CachedPermissionData) userFuture.thenAcceptAsync(user -> user.getCachedData().getPermissionData(queryOptions));
-    }
-
-    public static CachedPermissionData getPermissionData(ProxiedPlayer player) {
-        if (player.isConnected()) {
-            User user = TSReports.getInstance().getApi().getPlayerAdapter(ProxiedPlayer.class).getUser(player);
-            QueryOptions queryOptions = TSReports.getInstance().getApi().getContextManager().getQueryOptions(player);
-            return user.getCachedData().getPermissionData(queryOptions);
+    public static boolean hasPermission(CommandSender sender, List<String> permissions) {
+        for (String permission : permissions) {
+            if (isPluginEnabled("LuckPerms") && sender instanceof ProxiedPlayer) {
+                if (Luck.getPermissionData((ProxiedPlayer) sender).checkPermission(permission).asBoolean()) return true;
+                if ((permissions.size() - 1) == 0) return false;
+                continue;
+            }
+            if (sender.hasPermission(permission)) return true;
+            if ((permissions.size() - 1) == 0) return false;
         }
-        return getOfflineData(player.getUniqueId());
-    }
-
-    public static boolean hasPermission(CommandSender sender, String permission) {
-        if (isPluginEnabled("LuckPerms") && sender instanceof ProxiedPlayer) {
-            return getPermissionData((ProxiedPlayer) sender).checkPermission(permission).asBoolean();
-        }
-        return sender.hasPermission(permission);
+        return false;
     }
 
 }

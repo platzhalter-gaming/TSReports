@@ -80,3 +80,17 @@ mysql:
   username: player
   password: abc123
   port: 3306 # default mysql port
+
+#⮟ DISCORD ⮟
+discord:
+  enabled: false
+  token: 'Your Token Here'
+  serverId: 'Your ServerId Here'
+  report-announce:
+    enabled: true
+    channel-id: 'Your Announce Channel Id Here'
+    embeds:
+      report: true
+      claim: true
+      delete: true
+      complete: true

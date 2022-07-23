@@ -1,0 +1,267 @@
+#
+# |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----| |-----|
+#    |    |       |     | |       |     | |     | |     |    |    |
+#    |    |-----| |-----| |---|   |-----| |     | |-----|    |    |-----|
+#    |          | |   \   |       |       |     | |   \      |          |
+#    |    |-----| |    \  |-----| |       |-----| |    \     |    |-----|
+#                                                        made by LaurinVL
+#
+
+#⮟ IMPORTANT ⮟
+
+# If you want to add your own language to the plugin, then note the following:
+#
+# 1. be sure that the file has the extension '.yml'.
+# 2. be sure that there was no spelling mistake during the transfer
+#
+# If you now feel confident enough to add your own language,
+# then I would recommend you to copy one of the default files and then modify it
+#
+
+#⮟ MESSAGES ⮟
+
+#⮟ The prefix placeholder can be used in every message (%prefix%)
+prefix: '&c举报 &8»&r'
+
+noPermission: '%prefix% &c权限不足.'
+playerNotFound: '%prefix% &c玩家不存在.'
+reportNotFound: '%prefix% &c举报内容不存在.'
+statusNotFound: '%prefix% &c状态不存在.'
+onlyPlayer: '%prefix% &c该命令仅可由玩家执行.'
+commandDisabled: '%prefix% &c该命令已被禁用.'
+#⮟ Placeholders: %operator%, %target%, %reason%
+staffNotify: '%prefix% &7玩家 &6%operator% &7举报了 &6%target% &7，理由为 &6%reason% &7.'
+numberTooHigh: '%prefix% &c数字过大.'
+blacklisted: '%prefix% &c你已被强制禁用举报功能.'
+unableToReport: '%prefix% &c该玩家不可举报.'
+#⮟ Placeholders: %time%
+reportCooldown: '%prefix% &7请再等待 &e%time% &7秒后再次举报.'
+reportYourself: '%prefix% &c你不能举报你自己.'
+mustBeNumber: '%prefix% &c给定值不是数字.'
+alreadyLoggedIn: '%prefix% &7你已登入.'
+notLoggedIn: '%prefix% &7你尚未登入.'
+cannotDeleteClaimedReport: '%prefix% &7该举报已被处理并且不能删除.'
+alreadyClaimed: '%prefix% &7该举报已被处理.'
+notClaimed: '%prefix% &7该举报不可处理.'
+alreadyCompleted: '%prefix% &7该举报已被处理.'
+sameStatus: '%prefix% &c这份报告已经有了这种状态.'
+
+otherReason:
+  message: '%prefix% &7请输入你要举报该玩家的理由.'
+  cancelled: '%prefix% &7操作已被 &c撤销&7.'
+
+staffJoin:
+  #⮟ Placeholders: %reportsCount%, %vulnerability%, %loggedIn%
+  message: |-
+    &f
+    &7- &6自上次重启开始的共计举报数&8: &c%reportsCount%
+    &f
+    &7- &6服务器有 %vulnerability%
+    &f
+    &7- &6你当前正在 %loggedIn%
+    &f
+  vulnerability:
+    low: '&a低威胁 &7(无需操作)'
+    medium: '&e中等威胁 &7(需要一些操作)'
+    high: '&c高威胁 &7(必须制裁)'
+
+gui:
+  backbutton:
+    name: '&7返回'
+  barrier:
+    name: '&7//'
+  main:
+    title: '&6&lTSReports 举报界面'
+    languageselector:
+      name: '&e选择语言'
+    managereports:
+      name: '&e管理举报'
+    adminpanel:
+      name: '&e管理员界面'
+  languageselector:
+    title: '&e语言选择 - 当前语言: &8{0}'
+  adminpanel:
+    title: '&e管理员界面'
+    reload:
+      name: '&a重载所有配置文件'
+    cleardatabase:
+      name: '&a清理举报数据库'
+    status:
+      name: '&e服务器状态:'
+      #⮟ Placeholders: %reportsCount%, %storageProvider%, %vulnerability%, %totalData%
+      lore:
+        - '&f'
+        - '&7总举报数 &8» &6%reportsCount%'
+        - '&f'
+        - '&7记录数据数 &8» &6%totalData%'
+        - '&7存储方式 &8» &6%storageProvider%'
+        - '&f'
+        - '&7服务器状态为 %vulnerability%'
+        - '&f'
+        - '&7在线管理员数量 &8» &6%staffOnline%'
+        - '&f'
+  managereports:
+    title: '&e管理举报 - 共计 &6{0}'
+    next:
+      name: '&7下一页'
+    previous:
+      name: '&7上一页'
+    report:
+      name: '&b举报 #%id%'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &f当前状态 &8» &f%status%'
+        - '&f'
+        - '&8» &f提交者 &8» &b%operator%'
+        - '&8» &f被举报者 &8» &c%player%'
+        - '&f'
+        - '&8» &f举报理由 &8» &b%reason%'
+        - '&8» &f所在服务器 &8» &b%server%'
+        - '&f'
+  reportpanel:
+    title: '&e举报面板'
+    reasons:
+      hacking: '开挂'
+      flying: '飞行'
+      xray: '透视'
+      griefing: '恶意破坏'
+      name: '名称违规'
+      skin: '皮肤违规'
+      chat: '聊天'
+      other: '其他'
+  specificreport:
+    title: '&b举报 #%id%'
+    delete:
+      name: '&c删除'
+      lore:
+        - '&7点击删除该举报'
+    info:
+      name: '&a信息'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &f当前状态 &8» &f%status%'
+        - '&f'
+        - '&8» &f提交者 &8» &b%operator%'
+        - '&8» &f被举报者 &8» &c%player%'
+        - '&f'
+        - '&8» &f举报理由 &8» &b%reason%'
+        - '&8» &f所在服务器 &8» &b%server%'
+        - '&f'
+    claim:
+      name: '&e处理'
+      lore:
+        - '&7点击处理该举报'
+    complete:
+      name: '&b完成'
+      lore:
+        - '&7点击完成该举报'
+        - '&f'
+        - '&c&l免责声明:'
+        - '&7只有在你举报后有效'
+        - '&7该举报'
+  statuspanel:
+    title: '&e你的举报'
+    report:
+      name: '&b举报 #%id%'
+      #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+      lore:
+        - '&f'
+        - '&8» &f当前状态 &8» &f%status%'
+        - '&f'
+        - '&8» &f提交者 &8» &b%operator%'
+        - '&8» &f被举报者 &8» &c%player%'
+        - '&f'
+        - '&8» &f举报理由 &8» &b%reason%'
+        - '&8» &f所在服务器 &8» &b%server%'
+        - '&f'
+    reportsEmpty: '&c你当前没有举报.'
+  confirmation:
+    title: '&e确认操作'
+    confirm:
+      name: '&7点此 &a确认'
+    return:
+      name: '&7点此 &c撤销'
+
+command-messages:
+  #⮟ Placeholders: %player%, %reason%
+  report: '%prefix% &7你&a成功&7地以理由 &6%reason% &7举报了玩家 &6%player%&7.'
+  #⮟ Placeholders: %page%
+  listAbove: '&7====== &6列表 &7======'
+  #⮟ Placeholders: %executor%, %target%, %id%, %flag%
+  listBase: '&6%operator% &7-> &6%player% &7[&e%id%&7]'
+  #⮟ Placeholders: %page%
+  listBelow: '&7==== &6第&8 &e%page% &6页 &7===='
+  listEmpty: '%prefix% &c当前没有需要处理的举报.'
+  #⮟ Placeholders: %time%
+  clear: '%prefix% &7数据库已重置. [&7耗时 &6%time%ms&7]'
+  #⮟ Placeholders: %time%
+  reload: '%prefix% &cTSReports &7已&a成功&7重载 [&7耗时&6%time%ms&7]'
+  #⮟ Placeholders: %id%
+  claim: '%prefix% &7你 &a成功地&7 处理了举报 &6%id%&7.'
+  #⮟ Placeholders: %id%
+  delete: '%prefix% &7你 &a成功地&7 删除了举报 &6%id%&7.'
+  #⮟ Placeholders: %language%
+  interlanguage: '%prefix% &7你的语言已成功设置为 &6%language%&7.'
+  #⮟ Placeholders: %id%, %status%
+  status: '%prefix% &7举报 &6%id% &7的状态已被设置为了 &6%status%&7.'
+  login: '%prefix% &7你已 &a成功登入&7.'
+  logout: '%prefix% &7你已 &a成功登出&7.'
+  #⮟ Placeholders: %id%, %player%, %uuid%, %address%, %operator%, %reason%, %server%, %status%
+  get: |-
+    &7====== &6举报&8: &e%id% &7======
+    &7» 举报者&8: &6%operator%
+    &7» 被举报者&8:
+    &7»   - 玩家名称&8: &6%player%
+    &7»   - 玩家UUID&8: &6%uuid%
+    &7»   - 玩家IP&8: &6%address%
+    &7»
+    &7» 所属服务器&8: &6%server%
+    &7» 当前状态&8: &6%status%
+    &7» 举报理由&8: &6%reason%
+    &7====== &6举报&8: &e%id% &7======
+  permissionNodes: |-
+    &7这些是现有的许可节点。
+    &7
+    &6GUI &7- tsreports.gui
+    &6LOGIN &7- tsreports.login
+    &6LOGOUT &7- tsreports.logout
+    &6CLEAR &7- tsreports.clear
+    &6GET &7- tsreports.get
+    &6DELETE &7- tsreports.delete
+    &6LIST &7- tsreports.list
+    &6STATUS &7- tsreports.status
+    &6ADMIN &7- tsreports.admin
+    &6GUI_ADMIN &7- tsreports.gui.admin
+    &6GUI_MANAGEREPORTS &7- tsreports.gui.managereports
+    &6AUTOLOGIN &7- tsreports.autologin
+
+reportHelp:
+  above: '&7==== &6举报帮助 &7===='
+  optional: '&e[] &7= 可选参数'
+  required: '&e<> &7= 必需参数'
+  below: '&7==== &6举报帮助 &7===='
+
+adminHelp:
+  above: '&7==== &6管理员帮助 &7===='
+  optional: '&e[] &7= 可选参数'
+  required: '&e<> &7= 必需参数'
+  below: '&7==== &6管理员帮助 &7===='
+
+command-usages:
+  login: '&7/reports login'
+  logout: '&7/reports logout'
+  gui: '&7/reports gui'
+  about: '&7/reports about'
+  clear: '&7/reports clear'
+  reload: '&7/reports clear'
+  claim: '&7/reports claim <举报id>'
+  get: '&7/reports get <举报id>'
+  delete: '&7/reports delete <举报id>'
+  list: '&7/reports list [页码]'
+  status-admin: '&7/reports status <举报id> <new(新举报), wip(正处理), complete(已完成)>'
+  status-player: '&7/report status [页码]'
+  report: '&7/report <玩家名称/玩家UUID>'
+  language: '&7/report language'
+  addperm: '&7/reports addperm <结点> <玩家名称/玩家UUID>'

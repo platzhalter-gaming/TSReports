@@ -20,6 +20,7 @@ public class ConfigManager {
     private final TSReports plugin;
     private Configuration config;
     private final Map<Locale, Configuration> locales = new HashMap<>();
+    private Map<String, String> embeds;
     private List<String> bannedPlayers = new ArrayList<>();
     private java.util.Locale defaultLocale;
 
@@ -125,6 +126,47 @@ public class ConfigManager {
         return stringList.stream().map(Utils::color).collect(Collectors.toList());
     }
 
+    public Set<File> getEmbedFiles() {
+        Set<File> files = new HashSet<>();
+        File directoryPath = new File(plugin.getDataFolder(), "embeds");
+        FilenameFilter jsonFilter = (dir, name) -> {
+            String lowercaseName = name.toLowerCase();
+            return lowercaseName.endsWith(".json");
+        };
+        File[] filesList = directoryPath.listFiles(jsonFilter);
+        Objects.requireNonNull(filesList, "Embeds folder not found!");
+        Collections.addAll(files, filesList);
+        return files;
+    }
+
+    public Map<String, String> getEmbeds() {
+        Map<String, String> embeds = new HashMap<>();
+        for (File file : getEmbedFiles()) {
+            try {
+                embeds.put(file.getName().split("\\.")[0].toUpperCase(java.util.Locale.ENGLISH), fileToString(file, "UTF-8"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        plugin.getLogger().info("Found " + embeds.size() + " embed files.");
+        return embeds;
+    }
+
+    public String fileToString(File file, String charset) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int result = bis.read();
+        while (result != -1) {
+            buf.write((byte) result);
+            result = bis.read();
+        }
+        return buf.toString(charset);
+    }
+
+    public String getEmbed(String path) {
+        return embeds.get(path);
+    }
+
     public Locale getDefaultLocale() {
         return defaultLocale;
     }
@@ -136,11 +178,14 @@ public class ConfigManager {
     public void setup() {
         this.config = copyConfigFile();
         // Copies all locale files.
-        copyLocaleFiles();
+        copyFilesFromFolder("locales");
+        // Copies all embed files.
+        copyFilesFromFolder("embeds");
 
         for (Map.Entry<Locale, Object> entry : getLocales().entrySet()) {
             locales.put(entry.getKey(), (Configuration) entry.getValue());
         }
+        this.embeds = getEmbeds();
         defaultLocale = Utils.stringToLocale(getConfig().getString("default-server-language"));
         bannedPlayers = getConfig().getStringList("banned-players");
     }
@@ -168,13 +213,19 @@ public class ConfigManager {
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void copyLocaleFiles() {
+    public void copyFilesFromFolder(String folder) {
         Predicate<? super Path> filter = entry -> {
             String path = entry.getFileName().toString();
-            return path.endsWith(".yml");
+            if (folder.equals("locales")) {
+                return path.endsWith(".yml");
+            }
+            if (folder.equals("embeds")) {
+                return path.endsWith(".json");
+            }
+            return false;
         };
-        FileUtils.getFilesIn("locales", filter).forEach(file -> {
-            File destination = new File(plugin.getDataFolder(), "locales" + File.separator + file.getName());
+        FileUtils.getFilesIn(folder, filter).forEach(file -> {
+            File destination = new File(plugin.getDataFolder(), folder + File.separator + file.getName());
             if (!destination.getParentFile().exists())
                 destination.getParentFile().mkdir();
             if (!destination.exists() && !destination.isDirectory()) {

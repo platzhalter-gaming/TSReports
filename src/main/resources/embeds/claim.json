@@ -1,0 +1,10 @@
+{
+  "type": "",
+  "title": "New Claim",
+  "description": "`%operator%` has claimed the report `%id%`",
+  "color": 5540790,
+  "footer": {
+    "icon_url": "https://i.imgur.com/JhEluGV.png",
+    "text": "TSReports"
+  }
+}
