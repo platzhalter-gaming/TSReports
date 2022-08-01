@@ -1,22 +1,23 @@
 package org.mpdev.projects.tsreports.inventory.inventories;
 
-import dev.simplix.protocolize.api.ClickType;
-import dev.simplix.protocolize.data.ItemType;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.events.ReportEvent;
-import org.mpdev.projects.tsreports.inventory.*;
+import org.mpdev.projects.tsreports.inventory.Components;
+import org.mpdev.projects.tsreports.inventory.UIComponent;
+import org.mpdev.projects.tsreports.inventory.UIFrame;
 import org.mpdev.projects.tsreports.objects.OfflinePlayer;
 import org.mpdev.projects.tsreports.objects.Report;
 import org.mpdev.projects.tsreports.objects.Status;
 import org.mpdev.projects.tsreports.utils.Messages;
+import org.mpdev.projects.tsreports.utils.Reasons;
 import org.mpdev.projects.tsreports.utils.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class ReportPanel extends UIFrame {
@@ -49,56 +50,18 @@ public class ReportPanel extends UIFrame {
 
     @Override
     public void createComponents() {
-        for (int i = 0; i < 8; i++) {
-            add(Components.getBarrierComponent(i, getViewer()));
-        }
-        add(Components.getBarrierComponent(8, getViewer()));
-
-        addReason(ItemType.IRON_SWORD, Messages.GUI_REPORTPANEL_REASONS_HACKING.getString(getViewer().getName()), 10, "Hacking");
-        addReason(ItemType.FEATHER, Messages.GUI_REPORTPANEL_REASONS_FLYING.getString(getViewer().getName()), 12, "Flying");
-        addReason(ItemType.DIAMOND_ORE, Messages.GUI_REPORTPANEL_REASONS_XRAY.getString(getViewer().getName()), 14, "X-Ray");
-        addReason(ItemType.TNT, Messages.GUI_REPORTPANEL_REASONS_GRIEFING.getString(getViewer().getName()), 16, "Griefing");
-        addReason(ItemType.NAME_TAG, Messages.GUI_REPORTPANEL_REASONS_NAME.getString(getViewer().getName()), 19, "Name");
-        addReason(ItemType.SKELETON_SKULL, Messages.GUI_REPORTPANEL_REASONS_SKIN.getString(getViewer().getName()), 21, "Skin");
-        addReason(ItemType.WRITABLE_BOOK, Messages.GUI_REPORTPANEL_REASONS_CHAT.getString(getViewer().getName()), 23, "Chat");
-        addReason(ItemType.PAPER, Messages.GUI_REPORTPANEL_REASONS_OTHER.getString(getViewer().getName()), 25, "Other");
-
-        for (int i = 27; i < 35; i++) {
-            add(Components.getBarrierComponent(i, getViewer()));
-        }
-        add(Components.getBarrierComponent(35, getViewer()));
-    }
-
-    public void addReason(ItemType type, String name, int slot, String reason) {
-        UIComponent component = new UIComponentImpl.Builder(type)
-                .name(name).slot(slot).build();
-        component.setListener(ClickType.LEFT_CLICK, () -> {
-            if (reason.equals("Other")) {
-                ReasonOther reasonOther = Utils.isOnline(targetUuid.toString()) ? new ReasonOther(getViewer(), (ProxiedPlayer) target) : new ReasonOther(getViewer(), (OfflinePlayer) target);
-                reasonOther.start();
-                InventoryDrawer.close(this);
-                return;
+        if (plugin.getConfig().getBoolean("gui.reportpanel.barrier")) {
+            for (int i = 0; i < 8; i++) {
+                add(Components.getBarrierComponent(i, getViewer()));
             }
-            if (Utils.isOnline(targetUuid.toString())) {
-                callEvent(getViewer(), (ProxiedPlayer) target, reason);
-            } else {
-                callEvent(getViewer(), (OfflinePlayer) target, reason);
+            add(Components.getBarrierComponent(8, getViewer()));
+            for (int i = 27; i < 35; i++) {
+                add(Components.getBarrierComponent(i, getViewer()));
             }
-            InventoryDrawer.close(this);
-        });
-        add(component);
-    }
+        }
 
-    public void callEvent(ProxiedPlayer player, ProxiedPlayer target, String reason) {
-        plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
-    }
-
-    public void callEvent(ProxiedPlayer player, OfflinePlayer target, String reason) {
-        plugin.getProxy().getPluginManager().callEvent(new ReportEvent(new Report(target.getName(), target.getUniqueId(), Utils.getPlayerIp(target.getUniqueId()), reason, player.getName(), player.getServer().getInfo().getName(), Status.NEW, highestId())));
-    }
-
-    public int highestId() {
-        return plugin.getStorageManager().getReportsCount() + 1;
+        Reasons.getAll(getViewer(), target, targetUuid).forEach(this::add);
+        add(Components.getBackComponent(getParent(), 35, getViewer()));
     }
 
     public static class ReasonOther implements Listener {
@@ -106,7 +69,7 @@ public class ReportPanel extends UIFrame {
         public final ProxiedPlayer player;
         public final Object target;
         public final UUID targetUuid;
-        public List<UUID> others = new ArrayList<>();
+        public Set<UUID> others = new HashSet<>();
 
         public ReasonOther(ProxiedPlayer player, ProxiedPlayer target) {
             this.player = player;

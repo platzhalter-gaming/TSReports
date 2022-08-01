@@ -100,6 +100,7 @@ gui:
         - '&7Storage Provider &8» &6%storageProvider%'
         - '&f'
         - '&7Server has %vulnerability%'
+        - '&Plugin version: &6%version%'
         - '&f'
         - '&7Staff Online &8» &6%staffOnline%'
         - '&f'
@@ -125,14 +126,45 @@ gui:
   reportpanel:
     title: '&eReport Panel'
     reasons:
-      hacking: 'Hacking'
-      flying: 'Flying'
-      xray: 'X-Ray'
-      griefing: 'Griefing'
-      name: 'Name'
-      skin: 'Skin'
-      chat: 'Chat'
-      other: 'Other'
+      - hacking:
+          displayName: '&cHacking'
+          material: 'IRON_SWORD'
+          slot: 10
+          reason: 'Hacking' #← reason that is being shown when viewing the report
+      - flying:
+          displayName: '&cFlying'
+          material: 'FEATHER'
+          slot: 12
+          reason: 'Flying' #← reason that is being shown when viewing the report
+      - xray:
+          displayName: '&cX-Ray'
+          material: 'DIAMOND_ORE'
+          slot: 14
+          reason: 'X-Ray' #← reason that is being shown when viewing the report
+      - griefing:
+          displayName: '&cGriefing'
+          material: 'TNT'
+          slot: 16
+          reason: 'Griefing' #← reason that is being shown when viewing the report
+      - name:
+          displayName: '&cName'
+          material: 'NAME_TAG'
+          slot: 19
+          reason: 'Name' #← reason that is being shown when viewing the report
+      - skin:
+          displayName: '&cSkin'
+          material: 'SKELETON_SKULL'
+          slot: 21
+          reason: 'Skin' #← reason that is being shown when viewing the report
+      - chat:
+          displayName: '&cChat'
+          material: 'WRITABLE_BOOK'
+          slot: 23
+          reason: 'Chat' #← reason that is being shown when viewing the report
+      - other:
+          displayName: '&cOther'
+          material: 'PAPER'
+          slot: 25
   specificreport:
     title: '&bReport #%id%'
     delete:

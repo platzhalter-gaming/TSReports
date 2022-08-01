@@ -61,6 +61,8 @@ gui:
   adminpanel: true
   managereports: true # ← also contains specificreport inventory
   statuspanel: true
+  reportpanel:
+    barrier: true
 
 #⮟ determines how many reports are on a page when using the list command
 listPageLimit: 10
@@ -85,7 +87,6 @@ mysql:
 discord:
   enabled: false
   token: 'Your Token Here'
-  serverId: 'Your ServerId Here'
   report-announce:
     enabled: true
     channel-id: 'Your Announce Channel Id Here'

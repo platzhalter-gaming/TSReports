@@ -99,7 +99,8 @@ public class Utils {
                 .replace("%reportsCount%", "" + reportsCount)
                 .replace("%totalData%", "" + totalData)
                 .replace("%storageProvider%", storageManager.getStorageProvider())
-                .replace("%staffOnline%", "" + staffOnline);
+                .replace("%staffOnline%", "" + staffOnline)
+                .replace("%version%", TSReports.getInstance().getDescription().getVersion());
     }
 
     public static LuckPerms getLuckPerms() {

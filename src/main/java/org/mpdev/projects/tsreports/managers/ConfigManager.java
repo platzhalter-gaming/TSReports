@@ -104,6 +104,23 @@ public class ConfigManager {
         return Utils.color(placeholders.apply(message));
     }
 
+    public int getInteger(String path) {
+        if (locales.containsKey(defaultLocale)) {
+            return locales.get(defaultLocale).getInt(path);
+        }
+        plugin.getLogger().warning("The searched value was not found in the language file and the default language file: " + path);
+        return 0;
+    }
+
+    public int getInteger(String path, String playerName) {
+        Locale locale = new PlayerLocale(playerName).getLocale();
+        if (locales.containsKey(locale)) {
+            return locales.get(locale).getInt(path);
+        } else {
+            return getInteger(path);
+        }
+    }
+
     public List<String> getStringList(String path) {
         if (locales.containsKey(defaultLocale)) {
             List<String> stringList = locales.get(defaultLocale).getStringList(path);
@@ -242,5 +259,4 @@ public class ConfigManager {
             }
         });
     }
-
 }

@@ -2,6 +2,6 @@ name: TSReports
 version: '${project.version}'
 main: org.mpdev.projects.tsreports.TSReports
 description: The best report plugin for your server
-author: LaurinVL
+author: Todesstoss
 depends: [ Protocolize ]
 softDepends: [ LuckPerms ]
