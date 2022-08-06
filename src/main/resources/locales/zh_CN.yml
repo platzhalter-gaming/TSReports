@@ -122,45 +122,45 @@ gui:
   reportpanel:
     title: '&e举报面板'
     reasons:
-      - hacking:
-          displayName: '&c开挂'
-          material: 'IRON_SWORD'
-          slot: 10
-          reason: 'Hacking' #← reason that is being shown when viewing the report
-      - flying:
-          displayName: '&c飞行'
-          material: 'FEATHER'
-          slot: 12
-          reason: 'Flying' #← reason that is being shown when viewing the report
-      - xray:
-          displayName: '&c透视'
-          material: 'DIAMOND_ORE'
-          slot: 14
-          reason: 'X-Ray' #← reason that is being shown when viewing the report
-      - griefing:
-          displayName: '&c恶意破坏'
-          material: 'TNT'
-          slot: 16
-          reason: 'Griefing' #← reason that is being shown when viewing the report
-      - name:
-          displayName: '&c名称违规'
-          material: 'NAME_TAG'
-          slot: 19
-          reason: 'Name' #← reason that is being shown when viewing the report
-      - skin:
-          displayName: '&c皮肤违规'
-          material: 'SKELETON_SKULL'
-          slot: 21
-          reason: 'Skin' #← reason that is being shown when viewing the report
-      - chat:
-          displayName: '&c聊天'
-          material: 'WRITABLE_BOOK'
-          slot: 23
-          reason: 'Chat' #← reason that is being shown when viewing the report
-      - other:
-          displayName: '&c其他'
-          material: 'PAPER'
-          slot: 25
+      0:
+        displayName: '&c开挂'
+        material: 'IRON_SWORD'
+        slot: 10
+        reason: 'Hacking' #← reason that is being shown when viewing the report
+      1:
+        displayName: '&c飞行'
+        material: 'FEATHER'
+        slot: 12
+        reason: 'Flying' #← reason that is being shown when viewing the report
+      2:
+        displayName: '&c透视'
+        material: 'DIAMOND_ORE'
+        slot: 14
+        reason: 'X-Ray' #← reason that is being shown when viewing the report
+      3:
+        displayName: '&c恶意破坏'
+        material: 'TNT'
+        slot: 16
+        reason: 'Griefing' #← reason that is being shown when viewing the report
+      4:
+        displayName: '&c名称违规'
+        material: 'NAME_TAG'
+        slot: 19
+        reason: 'Name' #← reason that is being shown when viewing the report
+      5:
+        displayName: '&c皮肤违规'
+        material: 'SKELETON_SKULL'
+        slot: 21
+        reason: 'Skin' #← reason that is being shown when viewing the report
+      6:
+        displayName: '&c聊天'
+        material: 'WRITABLE_BOOK'
+        slot: 23
+        reason: 'Chat' #← reason that is being shown when viewing the report
+      7':
+        displayName: '&c其他' #← Other does not need a reason
+        material: 'PAPER'
+        slot: 25
   specificreport:
     title: '&b举报 #%id%'
     delete:

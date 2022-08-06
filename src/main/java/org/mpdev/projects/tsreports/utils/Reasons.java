@@ -3,7 +3,9 @@ package org.mpdev.projects.tsreports.utils;
 import dev.simplix.protocolize.api.ClickType;
 import dev.simplix.protocolize.api.Protocolize;
 import dev.simplix.protocolize.data.ItemType;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.config.Configuration;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.inventory.UIComponent;
@@ -25,35 +27,37 @@ public class Reasons {
 
     public static List<UIComponent> getAll(ProxiedPlayer player, Object target, UUID targetUuid) {
         ConfigManager configManager = plugin.getConfigManager();
-
         List<UIComponent> components = new ArrayList<>();
-        for (String s : plugin.getConfig().getStringList("gui.reportpanel.reasons")) {
-            String path = "gui.reportpanel.reasons." + s;
-            String displayName = configManager.getMessage(path + ".displayName", player.getName());
-            ItemType type = ItemType.valueOf(configManager.getMessage(path + ".material").toUpperCase(Locale.ENGLISH));
-            int slot = configManager.getInteger(path + ".slot", player.getName());
-            String reason = configManager.getMessage(path + ".reason", player.getName());
-            UIComponent component = new UIComponentImpl.Builder(type)
-                    .name(displayName)
-                    .slot(slot)
-                    .build();
-            component.setListener(ClickType.LEFT_CLICK, () -> {
-                String otherPath = "gui.reportpanel.reasons.other.reason";
-                if (!configManager.getMessage(otherPath).equals(otherPath)) {
-                    if (reason.equals(configManager.getMessage(otherPath))) {
+
+        for (int i = 0; i < 35; i++) {
+            Configuration section = configManager.getSection("gui.reportpanel.reasons." + i, player.getName());
+            if (section != null) {
+                String displayName = Utils.color(section.getString("displayName"));
+                ItemType type = ItemType.valueOf(section.getString("material").toUpperCase(Locale.ENGLISH));
+                int slot = section.getInt("slot");
+                String reason = section.getString("reason");
+
+                UIComponent component = new UIComponentImpl.Builder(type)
+                        .name(displayName)
+                        .slot(slot)
+                        .build();
+                component.setListener(ClickType.LEFT_CLICK, () -> {
+                    if (ChatColor.stripColor(displayName).toLowerCase(Locale.ENGLISH).contains("other")) {
                         ReportPanel.ReasonOther other = Utils.isOnline(targetUuid.toString()) ? new ReportPanel.ReasonOther(player, (ProxiedPlayer) target) : new ReportPanel.ReasonOther(player, (OfflinePlayer) target);
                         Protocolize.playerProvider().player(player.getUniqueId()).closeInventory();
                         other.start();
                         return;
                     }
-                }
-                if (Utils.isOnline(targetUuid.toString())) {
-                    callEvent(player, (ProxiedPlayer) target, reason);
-                } else {
-                    callEvent(player, (OfflinePlayer) target, reason);
-                }
-            });
+                    if (Utils.isOnline(targetUuid.toString())) {
+                        callEvent(player, (ProxiedPlayer) target, reason);
+                    } else {
+                        callEvent(player, (OfflinePlayer) target, reason);
+                    }
+                });
+                components.add(component);
+            }
         }
+
         return components;
     }
 
