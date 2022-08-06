@@ -99,35 +99,6 @@ public class ConfigManager {
         return Utils.color(message.replace("%prefix%", prefix));
     }
 
-    public Configuration getSection(String path) {
-        if (locales.containsKey(defaultLocale)) {
-            Configuration config = locales.get(defaultLocale).getSection(path);
-            if (config != null) {
-                return config;
-            }
-        }
-        plugin.getLogger().warning("The searched section was not found in the language file and the default language file: " + path);
-        return null;
-    }
-
-    public Configuration getSection(String path, String playerName) {
-        Locale locale = new PlayerLocale(playerName).getLocale();
-        Configuration configuration;
-        if (locales.containsKey(locale)) {
-            configuration = locales.get(locale).getSection(path);
-            if (configuration == null) {
-                configuration = locales.get(defaultLocale).getSection(path);
-                if (configuration == null) {
-                    plugin.getLogger().warning("The searched section was not found in the language file and the default language file: " + path);
-                    return null;
-                }
-            }
-        } else {
-            configuration = getSection(path);
-        }
-        return configuration;
-    }
-
     public String getMessage(String path, String playerName, Function<String, String> placeholders) {
         String message = getMessage(path, playerName);
         return Utils.color(placeholders.apply(message));

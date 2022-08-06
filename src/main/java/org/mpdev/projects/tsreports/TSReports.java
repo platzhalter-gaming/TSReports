@@ -31,7 +31,7 @@ public final class TSReports extends Plugin {
     private DiscordManager discordManager;
     private DependencyManager dependencyManager;
     private InventoryController inventoryController;
-    private LuckPerms api;
+    private LuckPerms luckPerms;
 
     private String[] adminCommands;
 
@@ -68,7 +68,7 @@ public final class TSReports extends Plugin {
 
         this.commands = PluginHelp.setupCommands();
         this.inventoryController = new InventoryController();
-        this.api = Utils.getLuckPerms();
+        this.luckPerms = Utils.getLuckPerms();
     }
 
     @Override
@@ -85,8 +85,8 @@ public final class TSReports extends Plugin {
         return adminCommands;
     }
 
-    public LuckPerms getApi() {
-        return api;
+    public LuckPerms getLuckPerms() {
+        return luckPerms;
     }
 
     public Map<String, Boolean> getCommands() {

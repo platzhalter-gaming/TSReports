@@ -388,7 +388,7 @@ public class AdminCommand extends Command {
                 return;
             }
 
-            if (!Utils.isPluginEnabled("LuckPerms") || plugin.getApi() == null) {
+            if (!Utils.isPluginEnabled("LuckPerms") || plugin.getLuckPerms() == null) {
                 Utils.sendText(sender, "luckPerms");
                 return;
             }

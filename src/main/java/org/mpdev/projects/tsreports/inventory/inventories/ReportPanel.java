@@ -64,29 +64,28 @@ public class ReportPanel extends UIFrame {
         add(Components.getBackComponent(getParent(), 35, getViewer()));
     }
 
-    public static class ReasonOther implements Listener {
+    public static class Other implements Listener {
 
-        public final ProxiedPlayer player;
-        public final Object target;
-        public final UUID targetUuid;
-        public Set<UUID> others = new HashSet<>();
+        private final Set<UUID> otherReason = new HashSet<>();
 
-        public ReasonOther(ProxiedPlayer player, ProxiedPlayer target) {
+        private final ProxiedPlayer player;
+        private final Object target;
+        private final UUID targetUuid;
+
+        public Other(ProxiedPlayer player, ProxiedPlayer target) {
             this.player = player;
             this.target = target;
             this.targetUuid = target.getUniqueId();
         }
 
-        public ReasonOther(ProxiedPlayer player, OfflinePlayer target) {
+        public Other(ProxiedPlayer player, OfflinePlayer target) {
             this.player = player;
             this.target = target;
             this.targetUuid = target.getUniqueId();
         }
 
         public void start() {
-            TSReports plugin = TSReports.getInstance();
-            plugin.getProxy().getPluginManager().registerListener(plugin, this);
-            others.add(player.getUniqueId());
+            otherReason.add(player.getUniqueId());
             Utils.sendText(player, "otherReason.message");
         }
 
@@ -94,10 +93,11 @@ public class ReportPanel extends UIFrame {
         public void onChat(ChatEvent event) {
             if (!(event.getSender() instanceof ProxiedPlayer)) return;
             ProxiedPlayer player = (ProxiedPlayer) event.getSender();
-            if (!others.contains(player.getUniqueId())) return;
+            if (!otherReason.contains(player.getUniqueId())) return;
             event.setCancelled(true);
+
             if (event.getMessage().equalsIgnoreCase("cancel")) {
-                others.remove(player.getUniqueId());
+                otherReason.remove(player.getUniqueId());
                 Utils.sendText(player, "otherReason.cancelled");
                 return;
             }
@@ -108,7 +108,7 @@ public class ReportPanel extends UIFrame {
             } else {
                 callEvent(player, (OfflinePlayer) target, reason);
             }
-            others.remove(player.getUniqueId());
+            otherReason.remove(player.getUniqueId());
         }
 
         public void callEvent(ProxiedPlayer player, ProxiedPlayer target, String reason) {

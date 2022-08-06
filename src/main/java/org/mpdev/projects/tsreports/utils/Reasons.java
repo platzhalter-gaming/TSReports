@@ -5,7 +5,6 @@ import dev.simplix.protocolize.api.Protocolize;
 import dev.simplix.protocolize.data.ItemType;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.config.Configuration;
 import org.mpdev.projects.tsreports.TSReports;
 import org.mpdev.projects.tsreports.events.ReportEvent;
 import org.mpdev.projects.tsreports.inventory.UIComponent;
@@ -30,32 +29,34 @@ public class Reasons {
         List<UIComponent> components = new ArrayList<>();
 
         for (int i = 0; i < 35; i++) {
-            Configuration section = configManager.getSection("gui.reportpanel.reasons." + i, player.getName());
-            if (section != null) {
-                String displayName = Utils.color(section.getString("displayName"));
-                ItemType type = ItemType.valueOf(section.getString("material").toUpperCase(Locale.ENGLISH));
-                int slot = section.getInt("slot");
-                String reason = section.getString("reason");
+            String path = "gui.reportpanel.reasons." + i;
 
-                UIComponent component = new UIComponentImpl.Builder(type)
-                        .name(displayName)
-                        .slot(slot)
-                        .build();
-                component.setListener(ClickType.LEFT_CLICK, () -> {
-                    if (ChatColor.stripColor(displayName).toLowerCase(Locale.ENGLISH).contains("other")) {
-                        ReportPanel.ReasonOther other = Utils.isOnline(targetUuid.toString()) ? new ReportPanel.ReasonOther(player, (ProxiedPlayer) target) : new ReportPanel.ReasonOther(player, (OfflinePlayer) target);
-                        Protocolize.playerProvider().player(player.getUniqueId()).closeInventory();
-                        other.start();
-                        return;
-                    }
-                    if (Utils.isOnline(targetUuid.toString())) {
-                        callEvent(player, (ProxiedPlayer) target, reason);
-                    } else {
-                        callEvent(player, (OfflinePlayer) target, reason);
-                    }
-                });
-                components.add(component);
-            }
+            String displayName = configManager.getMessage(path + ".displayName", player.getName());
+            ItemType type = ItemType.valueOf(configManager.getMessage(path + ".material", player.getName()).toUpperCase(Locale.ENGLISH));
+            int slot = configManager.getInteger(path + ".slot", player.getName());
+            String reason = configManager.getMessage(path + ".reason");
+
+            UIComponent component = new UIComponentImpl.Builder(type)
+                    .name(displayName)
+                    .slot(slot)
+                    .build();
+            component.setListener(ClickType.LEFT_CLICK, () -> {
+                if (ChatColor.stripColor(displayName).toLowerCase(Locale.ENGLISH).contains("other")) {
+                    ReportPanel.Other other = Utils.isOnline(targetUuid.toString())
+                            ? new ReportPanel.Other(player, (ProxiedPlayer) target)
+                            : new ReportPanel.Other(player, (OfflinePlayer) target);
+                    Protocolize.playerProvider().player(player.getUniqueId()).closeInventory();
+                    other.start();
+                    return;
+                }
+                if (Utils.isOnline(targetUuid.toString())) {
+                    callEvent(player, (ProxiedPlayer) target, reason);
+                } else {
+                    callEvent(player, (OfflinePlayer) target, reason);
+                }
+            });
+
+            components.add(component);
         }
 
         return components;
