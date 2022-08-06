@@ -11,7 +11,8 @@ The best report plugin for your server
 
 # Download Link
 
-[Download from Spigot](https://www.spigotmc.org/resources/100163)
+* [Download from Spigot](https://www.spigotmc.org/resources/100163)
+* [Download from Releases](https://github.com/TDSTOS/TSReports/releases)
 
 # Support and Suggestions
 
